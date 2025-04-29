@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   BookOpen,
@@ -42,7 +41,7 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
   const renderTabContent = (
     title: string,
     content: string,
-    icon: React.ReactElement,
+    icon: React.ReactNode,
     iconBgClass: string,
     iconColorClass: string,
   ) => (
@@ -50,13 +49,12 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <div className={`p-1.5 rounded-md ${iconBgClass}`}>
-            {React.cloneElement(icon, {
+            {React.cloneElement(icon as React.ReactElement, {
               className: `h-4 w-4 ${iconColorClass}`,
             })}
           </div>
           <h3 className="font-medium text-sm">{title}</h3>
         </div>
-        {/* Use dangerouslySetInnerHTML here too */}
         <div dangerouslySetInnerHTML={{ __html: formatContent(content) }} />
       </CardContent>
     </Card>
@@ -106,90 +104,88 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
       </div>
 
       {/* Tabs for different analysis sections */}
-      <ScrollArea className="h-[450px] pr-4">
-        <Tabs defaultValue="key_vocabulary" className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 p-0 bg-gray-50 dark:bg-gray-900 border rounded-md">
-            <TabsTrigger
-              value="key_vocabulary"
-              className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-none h-10"
-            >
-              Kosakata Kunci
-            </TabsTrigger>
-            <TabsTrigger
-              value="structure"
-              className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-none h-10"
-            >
-              Struktur
-            </TabsTrigger>
-            <TabsTrigger
-              value="cultural"
-              className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-none h-10"
-            >
-              Konteks
-            </TabsTrigger>
-            <TabsTrigger
-              value="learning"
-              className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-none h-10"
-            >
-              Pembelajaran
-            </TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="key_vocabulary" className="w-full">
+        <TabsList className="grid grid-cols-2 w-full md:grid-cols-4 p-2 bg-gray-50 dark:bg-gray-900 md:border rounded-md h-auto ">
+          <TabsTrigger
+            value="key_vocabulary"
+            className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-md h-10"
+          >
+            Kosakata Kunci
+          </TabsTrigger>
+          <TabsTrigger
+            value="structure"
+            className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-md h-10"
+          >
+            Struktur
+          </TabsTrigger>
+          <TabsTrigger
+            value="cultural"
+            className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-md h-10"
+          >
+            Konteks
+          </TabsTrigger>
+          <TabsTrigger
+            value="learning"
+            className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-md h-10"
+          >
+            Pembelajaran
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="key_vocabulary" className="mt-4">
-            {renderTabContent(
-              'Kosakata & Frasa Kunci',
-              data.key_vocabulary,
-              <BookOpen />,
-              'bg-[#FF5B9E]/10',
-              'text-[#FF5B9E]',
-            )}
-          </TabsContent>
+        <TabsContent value="key_vocabulary" className="mt-4">
+          {renderTabContent(
+            'Kosakata & Frasa Kunci',
+            data.key_vocabulary,
+            <BookOpen />,
+            'bg-[#FF5B9E]/10',
+            'text-[#FF5B9E]',
+          )}
+        </TabsContent>
 
-          <TabsContent value="structure" className="mt-4">
-            {renderTabContent(
-              'Analisis Struktur & Tata Bahasa',
-              data.structure_analysis,
-              <Sparkles />,
-              'bg-[#FF5B9E]/10',
-              'text-[#FF5B9E]',
-            )}
-          </TabsContent>
+        <TabsContent value="structure" className="mt-4">
+          {renderTabContent(
+            'Analisis Struktur & Tata Bahasa',
+            data.structure_analysis,
+            <Sparkles />,
+            'bg-[#FF5B9E]/10',
+            'text-[#FF5B9E]',
+          )}
+        </TabsContent>
 
-          <TabsContent value="cultural" className="mt-4 space-y-4">
-            {renderTabContent(
-              'Konteks Budaya & Situasional',
-              data.cultural_context,
-              <GraduationCap />,
-              'bg-[#FF5B9E]/10',
-              'text-[#FF5B9E]',
-            )}
-            {renderTabContent(
-              'Catatan Stilistik & Nada',
-              data.stylistic_notes,
-              <Lightbulb />,
-              'bg-[#FFBD83]/10',
-              'text-[#FFBD83]',
-            )}
-          </TabsContent>
+        <TabsContent value="cultural" className="mt-4 space-y-4">
+          {renderTabContent(
+            'Konteks Budaya & Situasional',
+            data.cultural_context,
+            <GraduationCap />,
+            'bg-[#FF5B9E]/10',
+            'text-[#FF5B9E]',
+          )}
+          {renderTabContent(
+            'Catatan Stilistik & Nada',
+            data.stylistic_notes,
+            <Lightbulb />,
+            'bg-[#FFBD83]/10',
+            'text-[#FFBD83]',
+          )}
+        </TabsContent>
 
-          <TabsContent value="learning" className="mt-4 space-y-4">
-            {renderTabContent(
-              'Poin Pembelajaran Utama',
-              data.learning_points,
-              <GraduationCap />,
-              'bg-[#FF5B9E]/10',
-              'text-[#FF5B9E]',
-            )}
-            {renderTabContent(
-              'Alternatif Terjemahan',
-              data.alternative_translations,
-              <Languages />,
-              'bg-[#FFBD83]/10',
-              'text-[#FFBD83]',
-            )}
-          </TabsContent>
-        </Tabs>
-      </ScrollArea>
+        <TabsContent value="learning" className="mt-4 space-y-4">
+          {renderTabContent(
+            'Poin Pembelajaran Utama',
+            data.learning_points,
+            <GraduationCap />,
+            'bg-[#FF5B9E]/10',
+            'text-[#FF5B9E]',
+          )}
+          {renderTabContent(
+            'Alternatif Terjemahan',
+            data.alternative_translations,
+            <Languages />,
+            'bg-[#FFBD83]/10',
+            'text-[#FFBD83]',
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Action buttons */}
       <div className="flex justify-end mt-4">
