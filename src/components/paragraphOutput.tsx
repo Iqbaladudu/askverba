@@ -15,7 +15,11 @@ import {
   ClipboardCopy,
 } from 'lucide-react'
 import { OutputActions } from './outputActions'
-import { getCleanTitle, formatContent, handleCopy } from '@/lib/utils'
+import { getCleanTitle, handleCopy } from '@/lib/utils'
+import Markdown from 'react-markdown'
+import rehypeKatex from 'rehype-katex'
+import remarkMath from 'remark-math'
+import 'katex/dist/katex.min.css' // `rehype-katex` does not import the CSS for you
 
 interface ParagraphOutputProps {
   data: ParagraphTranslation
@@ -55,7 +59,9 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
           </div>
           <h3 className="font-medium text-sm">{title}</h3>
         </div>
-        <div dangerouslySetInnerHTML={{ __html: formatContent(content) }} />
+        <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+          {content}
+        </Markdown>
       </CardContent>
     </Card>
   )
@@ -90,7 +96,9 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
           <div className="flex-1">
             <h4 className="font-medium text-[#FF5B9E] mb-2">Terjemahan Utuh</h4>
             {/* Use dangerouslySetInnerHTML to render the HTML string */}
-            <div dangerouslySetInnerHTML={{ __html: formatContent(fullTranslationText) }} />
+            <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+              {fullTranslationText}
+            </Markdown>
           </div>
           <div className="ml-2">
             <OutputActions

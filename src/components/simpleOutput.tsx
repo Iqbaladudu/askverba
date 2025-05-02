@@ -2,6 +2,8 @@ import React from 'react'
 import { Languages } from 'lucide-react'
 import { OutputActions } from './outputActions'
 
+import Markdown from 'react-markdown'
+
 interface SimpleOutputProps {
   translation: string
 }
@@ -24,7 +26,9 @@ export const SimpleOutput: React.FC<SimpleOutputProps> = ({ translation }) => {
         />
       </div>
       <div className="bg-white dark:bg-gray-950 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
-        <p className="text-base leading-relaxed">{translation}</p>
+        <p className="text-base leading-relaxed">
+          <Markdown>{translation}</Markdown>
+        </p>
       </div>
     </div>
   )

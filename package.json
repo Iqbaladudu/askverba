@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ai-sdk/mistral": "^1.2.7",
+    "@ai-sdk/xai": "^1.2.15",
     "@payloadcms/db-mongodb": "3.33.0",
     "@payloadcms/next": "3.33.0",
     "@payloadcms/payload-cloud": "3.33.0",
@@ -47,6 +48,9 @@
     "postcss": "^8.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "sharp": "0.32.6",
     "tailwind-merge": "^3.2.0",
     "tailwindcss": "^4.1.3",
