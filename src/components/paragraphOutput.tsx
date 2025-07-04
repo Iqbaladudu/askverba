@@ -91,7 +91,7 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
       </div>
 
       {/* Main translation highlighted card */}
-      <div className="bg-gradient-to-r from-[#FF5B9E]/5 to-[#FFBD83]/5 p-4 rounded-lg border border-[#FF5B9E]/20 mb-4">
+      <div className="bg-[#FF5B9E]/5 p-4 rounded-lg border border-[#FF5B9E]/20 mb-4">
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <h4 className="font-medium text-[#FF5B9E] mb-2">Terjemahan Utuh</h4>
@@ -172,8 +172,8 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
             'Catatan Stilistik & Nada',
             data.stylistic_notes,
             <Lightbulb />,
-            'bg-[#FFBD83]/10',
-            'text-[#FFBD83]',
+            'bg-orange-500/10',
+            'text-orange-500',
           )}
         </TabsContent>
 
@@ -189,8 +189,8 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
             'Alternatif Terjemahan',
             data.alternative_translations,
             <Languages />,
-            'bg-[#FFBD83]/10',
-            'text-[#FFBD83]',
+            'bg-blue-500/10',
+            'text-blue-500',
           )}
         </TabsContent>
       </Tabs>

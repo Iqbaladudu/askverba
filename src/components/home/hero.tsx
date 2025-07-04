@@ -4,7 +4,17 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Globe, MessageCircle, BookOpen, ArrowRight, Sparkles } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import {
+  Globe,
+  MessageCircle,
+  BookOpen,
+  ArrowRight,
+  Sparkles,
+  Star,
+  Users,
+  Trophy,
+} from 'lucide-react'
 
 const Hero: React.FC = () => {
   // Animation variants
@@ -13,285 +23,273 @@ const Hero: React.FC = () => {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.15,
+        delayChildren: 0.1,
       },
     },
   }
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+    hidden: { opacity: 0, y: 30 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: [0.25, 0.46, 0.45, 0.94],
+      },
+    },
   }
 
   const floatingAnimation = {
-    y: [0, -10, 0],
+    y: [0, -15, 0],
     transition: {
-      duration: 4,
+      duration: 6,
       repeat: Infinity,
       repeatType: 'reverse' as const,
       ease: 'easeInOut',
     },
   }
 
-  const glowAnimation = {
-    boxShadow: [
-      '0 0 0 rgba(255, 91, 158, 0)',
-      '0 0 20px rgba(255, 91, 158, 0.5)',
-      '0 0 0 rgba(255, 91, 158, 0)',
-    ],
+  const pulseAnimation = {
+    scale: [1, 1.05, 1],
     transition: {
-      duration: 2,
+      duration: 3,
       repeat: Infinity,
-      repeatType: 'reverse' as const,
+      ease: 'easeInOut',
     },
   }
 
-  // Language bubbles data
-  const languages = [
-    { name: 'English', icon: '🇬🇧', delay: 0 },
-    { name: 'Español', icon: '🇪🇸', delay: 0.1 },
-    { name: '日本語', icon: '🇯🇵', delay: 0.2 },
-    { name: 'Français', icon: '🇫🇷', delay: 0.3 },
-    { name: 'Deutsch', icon: '🇩🇪', delay: 0.4 },
-    { name: '한국어', icon: '🇰🇷', delay: 0.5 },
+  // Stats data
+  const stats = [
+    { number: '15+', text: 'Languages', icon: Globe },
+    { number: '50K+', text: 'Users', icon: Users },
+    { number: '98%', text: 'Accuracy', icon: Trophy },
+  ]
+
+  // Feature highlights
+  const features = [
+    {
+      icon: MessageCircle,
+      text: 'Natural Conversation',
+      color: 'bg-blue-500',
+    },
+    {
+      icon: BookOpen,
+      text: 'Smart Learning',
+      color: 'bg-purple-500',
+    },
+    {
+      icon: Sparkles,
+      text: 'AI-Powered',
+      color: 'bg-orange-500',
+    },
   ]
 
   return (
-    <section className="relative overflow-hidden py-10 md:pt-16 md:pb-32">
-      {/* Background decorations - adjusted for mobile */}
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-950">
+      {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-10 left-[5%] w-24 sm:w-32 h-24 sm:h-32 rounded-full bg-gradient-to-r from-[#FF5B9E] to-[#FFBD83] opacity-10 blur-3xl"></div>
-        <div className="absolute -bottom-10 right-[5%] w-32 sm:w-40 h-32 sm:h-40 rounded-full bg-gradient-to-r from-[#FF5B9E] to-[#FFBD83] opacity-10 blur-3xl"></div>
-        <div className="absolute top-1/4 right-[10%] w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-[#FF5B9E] opacity-5 blur-2xl"></div>
-      </div>
-
-      {/* Floating dots pattern - reduced for mobile */}
-      <div className="absolute inset-0 overflow-hidden opacity-30 pointer-events-none">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={`dot-${i}`}
-            className="absolute rounded-full bg-[#FF5B9E]"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              width: `${Math.random() * 4 + 2}px`,
-              height: `${Math.random() * 4 + 2}px`,
-              opacity: Math.random() * 0.5 + 0.3,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="container px-4 mx-auto relative">
+        {/* Colored Orbs */}
         <motion.div
-          className="max-w-6xl mx-auto"
+          animate={floatingAnimation}
+          className="absolute -top-40 -right-40 w-80 h-80 bg-[#FF5B9E]/20 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{
+            ...floatingAnimation,
+            transition: { ...floatingAnimation.transition, delay: 1 },
+          }}
+          className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"
+        />
+
+        {/* Animated Grid */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,_rgba(255,91,158,0.1)_1px,_transparent_0)] [background-size:50px_50px] opacity-30" />
+      </div>
+
+      <div className="container px-4 sm:px-6 lg:px-8 mx-auto relative z-10">
+        <motion.div
+          className="max-w-5xl mx-auto text-center"
           variants={containerVariants}
           initial="hidden"
           animate="show"
         >
-          {/* Main content - reordered for mobile */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div>
-              {/* Heading */}
-              <motion.div className="mb-5 sm:mb-6 relative" variants={itemVariants}>
-                <motion.span
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide bg-[#FF5B9E]/10 text-[#FF5B9E] mb-4"
-                  animate={glowAnimation}
-                >
-                  <Sparkles className="w-3 h-3" />
-                  <span>Cara baru belajar bahasa</span>
-                </motion.span>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight mb-3 sm:mb-4">
-                  <span className="block">Kuasai Bahasa Baru dengan</span>
-                  <span className="bg-gradient-to-r from-[#FF5B9E] to-[#FFBD83] bg-clip-text text-transparent">
-                    Interaksi Alami
-                  </span>
-                </h1>
-              </motion.div>
-
-              {/* Description - font size adjusted for mobile */}
-              <motion.p
-                className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 leading-relaxed"
-                variants={itemVariants}
-              >
-                Belajar bahasa tidak harus serumit yang dibayangkan. Dengan AskVerba, nikmati
-                percakapan natural, pelafalan otentik, dan pendekatan berbasis AI yang menyesuaikan
-                dengan gaya belajarmu.
-              </motion.p>
-
-              {/* Call to action buttons - responsive for mobile */}
-              <motion.div
-                className="flex flex-col xs:flex-row flex-wrap gap-3 sm:gap-4 mb-8"
-                variants={itemVariants}
-              >
-                <Button
-                  size="lg"
-                  className="w-full xs:w-auto bg-gradient-to-r from-[#FF5B9E] to-[#FFBD83] hover:opacity-90 text-white shadow-md hover:shadow-lg transition-all duration-300 rounded-xl px-5 sm:px-6 py-5 sm:py-6 h-auto text-sm sm:text-base"
-                >
-                  <span>Mulai Belajar</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  asChild
-                  size="lg"
-                  className="w-full xs:w-auto border-gray-200 dark:border-gray-700 hover:border-[#FF5B9E] hover:text-[#FF5B9E] transition-all duration-300 rounded-xl px-5 sm:px-6 py-5 sm:py-6 h-auto text-sm sm:text-base"
-                >
-                  <Link href={'/translate'}>Coba Demo Gratis</Link>
-                </Button>
-              </motion.div>
-
-              {/* Stats - improved for mobile */}
-              <motion.div
-                className="grid grid-cols-3 gap-2 xs:gap-3 sm:gap-8"
-                variants={itemVariants}
-              >
-                {[
-                  { number: '12+', text: 'Bahasa Tersedia' },
-                  { number: '4M+', text: 'Pengguna' },
-                  { number: '95%', text: 'Tingkat Kelulusan' },
-                ].map((stat, index) => (
-                  <div key={index} className="text-center">
-                    <div className="text-lg xs:text-xl md:text-2xl font-bold bg-gradient-to-r from-[#FF5B9E] to-[#FFBD83] bg-clip-text text-transparent mb-0.5 sm:mb-1">
-                      {stat.number}
-                    </div>
-                    <div className="text-[10px] xs:text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                      {stat.text}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            </div>
-
-            {/* Language interactive visual - significantly improved for mobile */}
-            <motion.div
-              className="relative mt-2 sm:mt-0 order-first md:order-last mb-6 md:mb-0"
-              variants={itemVariants}
+          {/* Beta Badge */}
+          <motion.div variants={itemVariants} className="mb-6">
+            <Badge
+              variant="outline"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#FF5B9E]/10 border-[#FF5B9E]/20 text-[#FF5B9E] hover:bg-[#FF5B9E]/20 transition-colors"
             >
-              <div className="relative mx-auto max-w-[280px] sm:max-w-[340px] md:max-w-none aspect-square">
-                {/* Central element - conversation - adjusted size for mobile */}
-                <motion.div
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
-                  animate={floatingAnimation}
-                >
-                  <div className="relative w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[320px] md:h-[320px] rounded-full bg-gradient-to-r from-[#FF5B9E]/20 to-[#FFBD83]/20 backdrop-blur-md flex items-center justify-center">
-                    <div className="absolute inset-2 rounded-full border-2 border-dashed border-[#FF5B9E]/30 animate-spin-slow"></div>
-                    <div className="w-[85%] h-[85%] rounded-full bg-white dark:bg-gray-900 shadow-xl flex items-center justify-center overflow-hidden p-4 sm:p-6">
-                      <div className="text-center">
-                        <div className="relative w-16 sm:w-20 h-16 sm:h-20 mx-auto mb-3 sm:mb-4">
-                          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#FF5B9E] to-[#FFBD83] opacity-20 animate-pulse"></div>
-                          <div className="absolute inset-1 rounded-full bg-white dark:bg-gray-900 flex items-center justify-center">
-                            <Globe className="w-8 sm:w-10 h-8 sm:h-10 text-[#FF5B9E]" />
-                          </div>
-                        </div>
-                        <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">AskVerba</h3>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                          Asisten bahasa dengan AI yang mengerti kebutuhanmu
-                        </p>
-                      </div>
-                    </div>
+              <Star className="w-4 h-4" />
+              <span>AI-Powered Language Learning</span>
+              <Sparkles className="w-4 h-4" />
+            </Badge>
+          </motion.div>
+
+          {/* Main Heading */}
+          <motion.div variants={itemVariants} className="mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
+              <span className="block mb-2">Master Languages with</span>
+              <span className="text-[#FF5B9E]">Natural AI</span>
+            </h1>
+          </motion.div>
+
+          {/* Subtitle */}
+          <motion.p
+            variants={itemVariants}
+            className="text-lg sm:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed"
+          >
+            Experience the future of language learning. Get instant translations, cultural context,
+            and personalized lessons powered by advanced AI.
+          </motion.p>
+
+          {/* CTA Buttons */}
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+          >
+            <Button
+              size="lg"
+              className="w-full sm:w-auto bg-[#FF5B9E] hover:bg-[#E54A8C] text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-6 text-lg font-semibold rounded-2xl"
+            >
+              <span>Start Learning Free</span>
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              asChild
+              className="w-full sm:w-auto border-2 border-gray-200 dark:border-gray-700 hover:border-[#FF5B9E] hover:text-[#FF5B9E] hover:bg-[#FF5B9E]/5 transition-all duration-300 px-8 py-6 text-lg font-semibold rounded-2xl"
+            >
+              <Link href="/translate">Try Demo</Link>
+            </Button>
+          </motion.div>
+
+          {/* Stats Section */}
+          <motion.div
+            variants={itemVariants}
+            className="grid grid-cols-3 gap-6 sm:gap-8 mb-16 max-w-2xl mx-auto"
+          >
+            {stats.map((stat, index) => (
+              <motion.div
+                key={index}
+                className="text-center group"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="flex items-center justify-center mb-2">
+                  <stat.icon className="w-6 h-6 text-[#FF5B9E] group-hover:text-[#E54A8C] transition-colors" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-[#FF5B9E] mb-1">
+                  {stat.number}
+                </div>
+                <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                  {stat.text}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Feature Cards */}
+          <motion.div
+            variants={itemVariants}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-16"
+          >
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                className="relative group"
+                whileHover={{ y: -8 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-800 group-hover:shadow-xl transition-all duration-300">
+                  <div
+                    className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${feature.color} mb-4`}
+                  >
+                    <feature.icon className="w-6 h-6 text-white" />
                   </div>
-                </motion.div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    {feature.text}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Experience the power of AI in language learning
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
 
-                {/* Floating language bubbles - adjusted for mobile */}
-                {languages.map((lang, index) => {
-                  // Calculate position around the circle - smaller radius for mobile
-                  const angle = (index * (360 / languages.length) * Math.PI) / 180
-                  const baseRadius = 140 // Base distance from center
-                  const responsiveRadius =
-                    typeof window !== 'undefined' && window.innerWidth < 640
-                      ? baseRadius * 0.8
-                      : baseRadius
-                  const radius =
-                    typeof window !== 'undefined' && window.innerWidth < 480
-                      ? baseRadius * 0.7
-                      : responsiveRadius
-                  const x = Math.cos(angle) * radius
-                  const y = Math.sin(angle) * radius
+          {/* Central Visual Element */}
+          <motion.div variants={itemVariants} className="relative max-w-lg mx-auto">
+            <motion.div animate={pulseAnimation} className="relative">
+              {/* Main Circle */}
+              <div className="w-48 h-48 sm:w-64 sm:h-64 mx-auto bg-[#FF5B9E]/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
+                <div className="w-32 h-32 sm:w-40 sm:h-40 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center shadow-xl">
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-3 bg-[#FF5B9E] rounded-2xl flex items-center justify-center">
+                      <Globe className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">AskVerba</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Your AI Language Partner
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-                  // Hide some languages on smallest screens to avoid overcrowding
-                  const hiddenOnTinyScreen =
-                    index > 3 && typeof window !== 'undefined' && window.innerWidth < 360
+              {/* Floating Language Tags */}
+              {['🇺🇸 EN', '🇮🇩 ID', '🇯🇵 JP', '🇪🇸 ES', '🇫🇷 FR', '🇩🇪 DE'].map((lang, index) => {
+                const angle = (index * 60 * Math.PI) / 180
+                const radius = 120
+                const x = Math.cos(angle) * radius
+                const y = Math.sin(angle) * radius
 
-                  return (
-                    <motion.div
-                      key={lang.name}
-                      className={`absolute top-1/2 left-1/2 ${hiddenOnTinyScreen ? 'hidden' : 'block'}`}
-                      style={{
-                        x: x,
-                        y: y,
-                      }}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{
-                        opacity: 1,
-                        scale: 1,
-                        transition: { delay: 0.5 + lang.delay, duration: 0.5 },
-                      }}
-                      whileHover={{
-                        scale: 1.1,
-                        boxShadow: '0 10px 25px -5px rgba(255, 91, 158, 0.3)',
-                      }}
-                    >
-                      <div className="transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg px-2 sm:px-3 py-1 sm:py-2 flex items-center gap-1 sm:gap-2 border border-gray-100 dark:border-gray-700">
-                        <span className="text-lg sm:text-2xl">{lang.icon}</span>
-                        <span className="font-medium text-xs sm:text-sm whitespace-nowrap">
-                          {lang.name}
-                        </span>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-
-                {/* Learning features - optimized position and size for mobile */}
-                {[
-                  {
-                    icon: <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />,
-                    text: 'Percakapan',
-                    position: 'top-[5%] left-[20%] sm:top-0 sm:left-1/4',
-                  },
-                  {
-                    icon: <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />,
-                    text: 'Kosakata',
-                    position: 'bottom-[15%] left-[10%] sm:bottom-10 sm:left-10',
-                  },
-                  {
-                    icon: <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />,
-                    text: 'Pelafalan',
-                    position: 'bottom-[10%] right-[8%] sm:bottom-5 sm:right-5',
-                  },
-                ].map((feature, idx) => (
+                return (
                   <motion.div
-                    key={idx}
-                    className={`absolute ${feature.position} bg-white dark:bg-gray-800 shadow-lg rounded-full px-2 sm:px-4 py-1 sm:py-2 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm`}
-                    initial={{ opacity: 0, y: 20 }}
+                    key={lang}
+                    className="absolute top-1/2 left-1/2 hidden sm:block"
+                    style={{
+                      x: x,
+                      y: y,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                    initial={{ opacity: 0, scale: 0 }}
                     animate={{
                       opacity: 1,
-                      y: 0,
-                      transition: { delay: 0.8 + idx * 0.2, duration: 0.5 },
+                      scale: 1,
+                      y: [y, y - 10, y],
                     }}
-                    whileHover={{ y: -5 }}
+                    transition={{
+                      opacity: { delay: 0.5 + index * 0.1, duration: 0.5 },
+                      scale: { delay: 0.5 + index * 0.1, duration: 0.5 },
+                      y: {
+                        duration: 4,
+                        repeat: Infinity,
+                        repeatType: 'reverse',
+                        delay: index * 0.5,
+                      },
+                    }}
                   >
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-r from-[#FF5B9E] to-[#FFBD83] flex items-center justify-center text-white">
-                      {feature.icon}
+                    <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded-full shadow-lg border border-gray-100 dark:border-gray-700 text-sm font-medium whitespace-nowrap">
+                      {lang}
                     </div>
-                    <span className="font-medium">{feature.text}</span>
                   </motion.div>
-                ))}
-              </div>
+                )
+              })}
             </motion.div>
-          </div>
+          </motion.div>
 
-          {/* Trusted by brands - responsive for mobile */}
-          <motion.div className="mt-10 sm:mt-16 md:mt-24 text-center" variants={itemVariants}>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
-              DIPERCAYA OLEH INSTITUSI PENDIDIKAN TERKEMUKA
+          {/* Trust Indicators */}
+          <motion.div variants={itemVariants} className="mt-16">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 uppercase tracking-wide font-medium">
+              Trusted by learners worldwide
             </p>
-            <div className="flex flex-wrap justify-center gap-4 xs:gap-6 sm:gap-8 md:gap-16 opacity-70">
-              {['Harvard', 'Cambridge', 'Oxford', 'MIT', 'Stanford'].map((brand, idx) => (
+            <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-12 opacity-60">
+              {['Harvard', 'MIT', 'Stanford', 'Cambridge', 'Oxford'].map((brand, idx) => (
                 <motion.div
                   key={idx}
-                  className="text-base sm:text-lg md:text-xl font-semibold text-gray-400 dark:text-gray-600"
-                  whileHover={{ scale: 1.05, color: '#FF5B9E' }}
+                  className="text-lg sm:text-xl font-bold text-gray-400 dark:text-gray-600"
+                  whileHover={{ scale: 1.1, color: '#FF5B9E' }}
                   transition={{ duration: 0.2 }}
                 >
                   {brand}

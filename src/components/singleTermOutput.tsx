@@ -66,7 +66,7 @@ export const SingleTermOutput: React.FC<SingleTermOutputProps> = ({
       </div>
 
       {/* Main translation highlighted card */}
-      <div className="bg-gradient-to-r from-[#FF5B9E]/5 to-[#FFBD83]/5 p-4 rounded-lg border border-[#FF5B9E]/20 mb-5">
+      <div className="bg-[#FF5B9E]/5 p-4 rounded-lg border border-[#FF5B9E]/20 mb-5">
         <div className="flex justify-between items-start">
           <div
             className="flex-1"

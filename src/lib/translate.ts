@@ -29,7 +29,7 @@ export async function translateSimple(text: string) {
 export async function translateDetailed(text: string): Promise<TranslationResult> {
   try {
     const result = await generateObject({
-      model: xai('grok-3-fast-latest'),
+      model: mistral('mistral-large-2402'),
       schema: translationResultSchema,
       system: EN_ID_DETAILED_TRANSLATOR_PROMPT,
       prompt: text,

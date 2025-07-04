@@ -8,10 +8,10 @@ import { Wrench, ArrowLeft } from 'lucide-react'
 
 const NotFoundPage: React.FC = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-[#FF5B9E]/10 to-[#FFBD83]/10 text-gray-800 dark:text-gray-200">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200">
       {/* Animated Icon */}
       <motion.div
-        className="p-6 bg-gradient-to-r from-[#FF5B9E] to-[#FFBD83] rounded-full shadow-lg"
+        className="p-6 bg-[#FF5B9E] rounded-full shadow-lg"
         animate={{
           rotate: [0, 15, -15, 0],
           scale: [1, 1.1, 1],
@@ -55,7 +55,7 @@ const NotFoundPage: React.FC = () => {
       >
         <Button
           asChild
-          className="bg-gradient-to-r from-[#FF5B9E] to-[#FFBD83] text-white shadow-md hover:shadow-lg"
+          className="bg-[#FF5B9E] hover:bg-[#E54A8C] text-white shadow-md hover:shadow-lg"
         >
           <Link href="/">Kembali ke Beranda</Link>
         </Button>
