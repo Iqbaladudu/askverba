@@ -1,5 +1,8 @@
 import React from 'react'
 import './styles.css'
+import ReactQueryWrapper from '@/components/ReactQueryWrapper'
+import { Toaster } from '@/components/ui/sonner'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 export const metadata = {
   description: 'Ask and Learn New Languages',
@@ -12,7 +15,12 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <main>{children}</main>
+        <ReactQueryWrapper>
+          <AuthProvider>
+            <main>{children}</main>
+            <Toaster />
+          </AuthProvider>
+        </ReactQueryWrapper>
       </body>
     </html>
   )

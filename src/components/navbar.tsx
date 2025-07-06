@@ -7,7 +7,10 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Menu, MessageSquare, X } from 'lucide-react'
+import { Menu, MessageSquare, X, User, LogOut } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { logoutCustomerAction } from 'action/logout.action'
+import { toast } from 'sonner'
 
 interface NavItem {
   label: string
@@ -20,12 +23,22 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Translate', href: '/translate' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
-  { label: 'Try Free', href: '/register', isButton: true },
 ]
 
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const { isAuthenticated, customer, logout, isLoading } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      await logoutCustomerAction()
+      logout()
+      toast.success('Logged out successfully')
+    } catch (error) {
+      toast.error('Logout failed')
+    }
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -52,24 +65,49 @@ const Navbar: React.FC = () => {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-1">
-          {NAV_ITEMS.map((item) =>
-            item.isButton ? (
-              <Button
-                key={item.label}
-                asChild
-                className="ml-2 bg-[#FF5B9E] text-white font-semibold px-5 py-2 rounded-lg shadow hover:bg-[#E54A8C] transition"
-              >
-                <Link href={item.href}>{item.label}</Link>
-              </Button>
-            ) : (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 font-medium hover:text-[#FF5B9E] focus-visible:ring-2 focus-visible:ring-[#FF5B9E] transition"
-              >
-                {item.label}
-              </Link>
-            ),
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 font-medium hover:text-[#FF5B9E] focus-visible:ring-2 focus-visible:ring-[#FF5B9E] transition"
+            >
+              {item.label}
+            </Link>
+          ))}
+
+          {/* Auth buttons */}
+          {!isLoading && (
+            <div className="ml-2 flex items-center gap-2">
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200">
+                    <User className="h-4 w-4" />
+                    <span>Hi, {customer?.name}</span>
+                  </div>
+                  <Button
+                    onClick={handleLogout}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/login">Login</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    className="bg-[#FF5B9E] text-white font-semibold px-5 py-2 rounded-lg shadow hover:bg-[#E54A8C] transition"
+                  >
+                    <Link href="/register">Try Free</Link>
+                  </Button>
+                </>
+              )}
+            </div>
           )}
         </div>
 
@@ -101,26 +139,58 @@ const Navbar: React.FC = () => {
                   </span>
                   <span className="text-lg font-bold text-[#FF5B9E]">AskVerba</span>
                 </Link>
-                {NAV_ITEMS.map((item) =>
-                  item.isButton ? (
-                    <Button
-                      key={item.label}
-                      asChild
-                      className="w-full bg-[#FF5B9E] text-white font-semibold py-2 rounded-lg shadow hover:bg-[#E54A8C] transition"
-                      onClick={() => setOpen(false)}
-                    >
-                      <Link href={item.href}>{item.label}</Link>
-                    </Button>
-                  ) : (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="w-full px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 font-medium hover:text-[#FF5B9E] transition"
-                      onClick={() => setOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  ),
+                {NAV_ITEMS.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="w-full px-4 py-2 rounded-lg text-gray-700 dark:text-gray-200 font-medium hover:text-[#FF5B9E] transition"
+                    onClick={() => setOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+
+                {/* Mobile Auth buttons */}
+                {!isLoading && (
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    {isAuthenticated ? (
+                      <>
+                        <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 mb-3">
+                          <User className="h-4 w-4" />
+                          <span>Hi, {customer?.name}</span>
+                        </div>
+                        <Button
+                          onClick={() => {
+                            handleLogout()
+                            setOpen(false)
+                          }}
+                          variant="outline"
+                          className="w-full flex items-center gap-2"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="space-y-3">
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => setOpen(false)}
+                        >
+                          <Link href="/login">Login</Link>
+                        </Button>
+                        <Button
+                          asChild
+                          className="w-full bg-[#FF5B9E] text-white font-semibold py-2 rounded-lg shadow hover:bg-[#E54A8C] transition"
+                          onClick={() => setOpen(false)}
+                        >
+                          <Link href="/register">Try Free</Link>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </SheetContent>

@@ -1,13 +1,16 @@
 import { headers as getHeaders } from 'next/headers.js'
-import Image from 'next/image'
 import { getPayload } from 'payload'
 import React from 'react'
-import { fileURLToPath } from 'url'
 
 import config from '@/payload.config'
-import Translator from '../../components/translator'
-import Navbar from '../../components/navbar'
-import Hero from '../../components/home/hero'
+import Navbar from '@/components/navbar'
+import {
+  HeroSection,
+  HowItWorksSection,
+  TestimonialsSection,
+  CTASection,
+  Footer,
+} from '@/components/home/sections'
 
 export default async function HomePage() {
   const headers = await getHeaders()
@@ -19,8 +22,12 @@ export default async function HomePage() {
     <>
       <Navbar />
       <main>
-        <Hero />
+        <HeroSection />
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <CTASection />
       </main>
+      <Footer />
     </>
   )
 }

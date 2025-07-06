@@ -184,6 +184,13 @@ Try: 'The weather is beautiful today' or 'How are you doing?'"
                     ? 'border-[#FF5B9E] bg-[#FF5B9E]/5 shadow-md'
                     : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-[#FF5B9E]/50 hover:bg-[#FF5B9E]/5'
                 }`}
+                onClick={() => setTranslationMode(mode.value)}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') setTranslationMode(mode.value)
+                }}
+                role="button"
+                aria-pressed={translationMode === mode.value}
               >
                 <div className="flex items-start space-x-3">
                   <RadioGroupItem
@@ -206,7 +213,6 @@ Try: 'The weather is beautiful today' or 'How are you doing?'"
                         {mode.description}
                       </span>
                     </div>
-
                     <div className="flex flex-wrap gap-1">
                       {mode.features.map((feature, idx) => (
                         <Badge
@@ -220,7 +226,6 @@ Try: 'The weather is beautiful today' or 'How are you doing?'"
                     </div>
                   </div>
                 </div>
-
                 {/* Selection indicator */}
                 <AnimatePresence>
                   {translationMode === mode.value && (
