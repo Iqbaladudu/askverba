@@ -52,6 +52,12 @@ export const RegisterForm: React.FC = () => {
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
     mode: 'onSubmit',
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
   })
 
   const onSubmit = (values: RegisterSchema) => {

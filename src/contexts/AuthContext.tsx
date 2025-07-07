@@ -1,6 +1,13 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import {
+  getAuthTokenHybrid,
+  getCustomerHybrid,
+  setAuthCookiesOnClient,
+  clearAuthCookiesOnClient,
+} from '@/lib/auth-cookies'
+import { cleanupOldAuthStorage } from '@/lib/cleanup-storage'
 
 type Customer = {
   id: string
@@ -27,19 +34,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for stored auth data on mount
-    const storedToken = localStorage.getItem('auth-token')
-    const storedCustomer = localStorage.getItem('auth-customer')
+    // Clean up old localStorage data first
+    cleanupOldAuthStorage()
+
+    // Check for stored auth data on mount using cookies only
+    const storedToken = getAuthTokenHybrid()
+    const storedCustomer = getCustomerHybrid()
 
     if (storedToken && storedCustomer) {
       try {
-        const parsedCustomer = JSON.parse(storedCustomer)
         setToken(storedToken)
-        setCustomer(parsedCustomer)
+        setCustomer(storedCustomer)
       } catch (error) {
-        // Clear invalid stored data
-        localStorage.removeItem('auth-token')
-        localStorage.removeItem('auth-customer')
+        // Clear invalid stored data from cookies only
+        clearAuthCookiesOnClient()
       }
     }
     setIsLoading(false)
@@ -48,15 +56,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = (customer: Customer, token: string) => {
     setCustomer(customer)
     setToken(token)
-    localStorage.setItem('auth-token', token)
-    localStorage.setItem('auth-customer', JSON.stringify(customer))
+    // Store only in cookies - no localStorage
+    setAuthCookiesOnClient(token, customer)
   }
 
   const logout = () => {
     setCustomer(null)
     setToken(null)
-    localStorage.removeItem('auth-token')
-    localStorage.removeItem('auth-customer')
+    // Clear only from cookies - no localStorage
+    clearAuthCookiesOnClient()
   }
 
   const value = {

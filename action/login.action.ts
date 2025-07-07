@@ -2,6 +2,7 @@
 
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { setAuthCookies } from '@/lib/server-cookies'
 
 type LoginCustomerInput = {
   email: string
@@ -21,9 +22,7 @@ type LoginCustomerResult = {
   error?: string
 }
 
-export async function loginCustomerAction(
-  input: LoginCustomerInput,
-): Promise<LoginCustomerResult> {
+export async function loginCustomerAction(input: LoginCustomerInput): Promise<LoginCustomerResult> {
   try {
     const payload = await getPayload({ config })
 
@@ -37,16 +36,21 @@ export async function loginCustomerAction(
     })
 
     if (result.user) {
+      const customer = {
+        id: result.user.id,
+        name: result.user.name,
+        email: result.user.email,
+        createdAt: result.user.createdAt,
+        updatedAt: result.user.updatedAt,
+      }
+
+      // Set cookies on server-side for better security
+      await setAuthCookies(result.token, customer)
+
       // Return safe customer data (without password)
       return {
         success: true,
-        customer: {
-          id: result.user.id,
-          name: result.user.name,
-          email: result.user.email,
-          createdAt: result.user.createdAt,
-          updatedAt: result.user.updatedAt,
-        },
+        customer,
         token: result.token,
       }
     } else {
@@ -69,7 +73,8 @@ export async function loginCustomerAction(
     if (error.message?.includes('Account locked')) {
       return {
         success: false,
-        error: 'Account temporarily locked due to too many failed attempts. Please try again later.',
+        error:
+          'Account temporarily locked due to too many failed attempts. Please try again later.',
       }
     }
 

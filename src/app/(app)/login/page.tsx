@@ -1,8 +1,11 @@
+'use client'
+
 import React from 'react'
 import { LoginForm } from '@/components/auth/LoginForm'
 import Link from 'next/link'
+import { withGuestOnly } from '@/components/auth/withAuth'
 
-export default function LoginPage() {
+function LoginPage() {
   return (
     <main className="min-h-screen flex flex-col justify-center bg-gray-50 dark:bg-gray-950">
       <div className="container mx-auto px-4">
@@ -18,3 +21,6 @@ export default function LoginPage() {
     </main>
   )
 }
+
+// Export the guest-only protected page
+export default withGuestOnly(LoginPage)

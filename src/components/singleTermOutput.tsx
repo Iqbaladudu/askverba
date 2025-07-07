@@ -42,18 +42,20 @@ export const SingleTermOutput: React.FC<SingleTermOutputProps> = ({
   }
 
   return (
-    <div className="p-4 bg-gray-50 dark:bg-gray-900">
+    <div className="p-4 bg-neutral-50 dark:bg-neutral-900">
       {/* Title section */}
       <div className="mb-6">
         <div className="flex items-start justify-between">
           <div>
             <Badge
               variant="outline"
-              className="mb-2 text-[#FF5B9E] border-[#FF5B9E]/20 bg-[#FF5B9E]/5"
+              className="mb-2 text-primary-500 border-primary-500/20 bg-primary-500/5"
             >
               English Term
             </Badge>
-            <h2 className="text-xl sm:text-2xl font-bold">{cleanTitle}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
+              {cleanTitle}
+            </h2>
           </div>
           <OutputActions
             textToCopy={cleanTitle} // Copy original term
@@ -66,10 +68,10 @@ export const SingleTermOutput: React.FC<SingleTermOutputProps> = ({
       </div>
 
       {/* Main translation highlighted card */}
-      <div className="bg-[#FF5B9E]/5 p-4 rounded-lg border border-[#FF5B9E]/20 mb-5">
+      <div className="bg-primary-500/5 p-4 rounded-lg border border-primary-500/20 mb-5">
         <div className="flex justify-between items-start">
           <div
-            className="flex-1"
+            className="flex-1 text-neutral-800 dark:text-neutral-200"
             dangerouslySetInnerHTML={{ __html: formatContent(data.main_translation) }}
           />
           <OutputActions

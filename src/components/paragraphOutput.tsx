@@ -49,7 +49,7 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
     iconBgClass: string,
     iconColorClass: string,
   ) => (
-    <Card className="border border-gray-200 dark:border-gray-800">
+    <Card className="border border-neutral-200 dark:border-neutral-800">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <div className={`p-1.5 rounded-md ${iconBgClass}`}>
@@ -57,28 +57,32 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
               className: `h-4 w-4 ${iconColorClass}`,
             })}
           </div>
-          <h3 className="font-medium text-sm">{title}</h3>
+          <h3 className="font-medium text-sm text-neutral-800 dark:text-neutral-200">{title}</h3>
         </div>
-        <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-          {content}
-        </Markdown>
+        <div className="text-neutral-800 dark:text-neutral-200">
+          <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+            {content}
+          </Markdown>
+        </div>
       </CardContent>
     </Card>
   )
 
   return (
-    <div className="p-4 bg-gray-50 dark:bg-gray-900">
+    <div className="p-4 bg-neutral-50 dark:bg-neutral-900">
       {/* Title section */}
       <div className="mb-6">
         <div className="flex items-start justify-between">
           <div className="max-w-[90%]">
             <Badge
               variant="outline"
-              className="mb-2 text-[#FF5B9E] border-[#FF5B9E]/20 bg-[#FF5B9E]/5"
+              className="mb-2 text-primary-500 border-primary-500/20 bg-primary-500/5"
             >
               English Text
             </Badge>
-            <h2 className="text-base sm:text-lg font-bold line-clamp-2">{cleanTitle}</h2>
+            <h2 className="text-base sm:text-lg font-bold line-clamp-2 text-neutral-800 dark:text-neutral-200">
+              {cleanTitle}
+            </h2>
           </div>
           <OutputActions
             textToCopy={cleanTitle}
@@ -91,14 +95,16 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
       </div>
 
       {/* Main translation highlighted card */}
-      <div className="bg-[#FF5B9E]/5 p-4 rounded-lg border border-[#FF5B9E]/20 mb-4">
+      <div className="bg-primary-500/5 p-4 rounded-lg border border-primary-500/20 mb-4">
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <h4 className="font-medium text-[#FF5B9E] mb-2">Terjemahan Utuh</h4>
+            <h4 className="font-medium text-primary-500 mb-2">Terjemahan Utuh</h4>
             {/* Use dangerouslySetInnerHTML to render the HTML string */}
-            <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-              {fullTranslationText}
-            </Markdown>
+            <div className="text-neutral-800 dark:text-neutral-200">
+              <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                {fullTranslationText}
+              </Markdown>
+            </div>
           </div>
           <div className="ml-2">
             <OutputActions
@@ -116,25 +122,25 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
         <TabsList className="grid grid-cols-2 w-full md:grid-cols-4 p-2 bg-gray-50 dark:bg-gray-900 md:border rounded-md h-auto ">
           <TabsTrigger
             value="key_vocabulary"
-            className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-md h-10"
+            className="data-[state=active]:bg-primary-500/10 data-[state=active]:text-primary-500 rounded-md h-10"
           >
             Kosakata Kunci
           </TabsTrigger>
           <TabsTrigger
             value="structure"
-            className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-md h-10"
+            className="data-[state=active]:bg-primary-500/10 data-[state=active]:text-primary-500 rounded-md h-10"
           >
             Struktur
           </TabsTrigger>
           <TabsTrigger
             value="cultural"
-            className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-md h-10"
+            className="data-[state=active]:bg-primary-500/10 data-[state=active]:text-primary-500 rounded-md h-10"
           >
             Konteks
           </TabsTrigger>
           <TabsTrigger
             value="learning"
-            className="data-[state=active]:bg-[#FF5B9E]/10 data-[state=active]:text-[#FF5B9E] rounded-md h-10"
+            className="data-[state=active]:bg-primary-500/10 data-[state=active]:text-primary-500 rounded-md h-10"
           >
             Pembelajaran
           </TabsTrigger>
@@ -145,8 +151,8 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
             'Kosakata & Frasa Kunci',
             data.key_vocabulary,
             <BookOpen />,
-            'bg-[#FF5B9E]/10',
-            'text-[#FF5B9E]',
+            'bg-primary-500/10',
+            'text-primary-500',
           )}
         </TabsContent>
 
@@ -155,8 +161,8 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
             'Analisis Struktur & Tata Bahasa',
             data.structure_analysis,
             <Sparkles />,
-            'bg-[#FF5B9E]/10',
-            'text-[#FF5B9E]',
+            'bg-primary-500/10',
+            'text-primary-500',
           )}
         </TabsContent>
 
@@ -165,8 +171,8 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
             'Konteks Budaya & Situasional',
             data.cultural_context,
             <GraduationCap />,
-            'bg-[#FF5B9E]/10',
-            'text-[#FF5B9E]',
+            'bg-primary-500/10',
+            'text-primary-500',
           )}
           {renderTabContent(
             'Catatan Stilistik & Nada',
@@ -182,8 +188,8 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
             'Poin Pembelajaran Utama',
             data.learning_points,
             <GraduationCap />,
-            'bg-[#FF5B9E]/10',
-            'text-[#FF5B9E]',
+            'bg-primary-500/10',
+            'text-primary-500',
           )}
           {renderTabContent(
             'Alternatif Terjemahan',

@@ -1,12 +1,25 @@
-import { translateDetailed } from '@/lib/translate'
+import { translateWithCache } from '@/lib/services/translationService'
 
-export async function translateDetailedAction(text: string) {
+export async function translateDetailedAction(
+  text: string,
+  userId?: string,
+  saveToHistory: boolean = false,
+) {
   try {
-    const result = await translateDetailed(text)
-    console.log(result.data)
-    return result.data
+    const response = await translateWithCache({
+      text,
+      mode: 'detailed',
+      userId,
+      saveToHistory,
+    })
+
+    return {
+      result: response.result,
+      fromCache: response.fromCache,
+      processingTime: response.processingTime,
+    }
   } catch (error) {
-    console.error('translateSimple error:', error)
+    console.error('translateDetailed error:', error)
     throw new Error('Failed to translate text')
   }
 }

@@ -6,12 +6,14 @@ import { Card, CardContent } from '@/components/ui/card'
 import { translateSimpleAction } from 'action/translate-simple.action'
 import { translateDetailed } from '@/lib/translate'
 import { TranslationResult, TranslationMode, IntegratedTranslatorProps } from '@/types/translator'
+import { SimpleTranslationResult } from '@/components/schema'
 import { TranslatorInput } from './translatorInput'
 import { TranslationOutput } from './translationOutput'
 
 const defaultOnTranslate = async (text: string, mode: TranslationMode) => {
   if (mode === 'simple') {
-    return await translateSimpleAction(text)
+    const response = await translateSimpleAction(text)
+    return response.result
   } else {
     return await translateDetailed(text)
   }
@@ -22,9 +24,9 @@ const IntegratedTranslator: React.FC<IntegratedTranslatorProps> = ({
   maxInputLength = 500,
 }) => {
   const [inputText, setInputText] = useState<string>('')
-  const [translationResult, setTranslationResult] = useState<string | TranslationResult | null>(
-    null,
-  )
+  const [translationResult, setTranslationResult] = useState<
+    string | SimpleTranslationResult | TranslationResult | null
+  >(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [autoTranslate, setAutoTranslate] = useState<boolean>(false)
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null)

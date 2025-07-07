@@ -71,6 +71,14 @@ export interface Config {
     users: User;
     media: Media;
     customers: Customer;
+    vocabulary: Vocabulary;
+    'translation-history': TranslationHistory;
+    'user-progress': UserProgress;
+    'learning-goals': LearningGoal;
+    'user-preferences': UserPreference;
+    achievements: Achievement;
+    'user-achievements': UserAchievement;
+    'practice-sessions': PracticeSession;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -80,6 +88,14 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
+    vocabulary: VocabularySelect<false> | VocabularySelect<true>;
+    'translation-history': TranslationHistorySelect<false> | TranslationHistorySelect<true>;
+    'user-progress': UserProgressSelect<false> | UserProgressSelect<true>;
+    'learning-goals': LearningGoalsSelect<false> | LearningGoalsSelect<true>;
+    'user-preferences': UserPreferencesSelect<false> | UserPreferencesSelect<true>;
+    achievements: AchievementsSelect<false> | AchievementsSelect<true>;
+    'user-achievements': UserAchievementsSelect<false> | UserAchievementsSelect<true>;
+    'practice-sessions': PracticeSessionsSelect<false> | PracticeSessionsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -194,6 +210,313 @@ export interface Customer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vocabulary".
+ */
+export interface Vocabulary {
+  id: string;
+  customer: string | Customer;
+  word: string;
+  translation: string;
+  pronunciation?: string | null;
+  definition?: string | null;
+  example?: string | null;
+  difficulty?: ('easy' | 'medium' | 'hard') | null;
+  status?: ('new' | 'learning' | 'mastered') | null;
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  practiceCount?: number | null;
+  /**
+   * Accuracy percentage (0-100)
+   */
+  accuracy?: number | null;
+  lastPracticed?: string | null;
+  sourceLanguage?: string | null;
+  targetLanguage?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "translation-history".
+ */
+export interface TranslationHistory {
+  id: string;
+  customer: string | Customer;
+  originalText: string;
+  translatedText: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+  mode: 'simple' | 'detailed';
+  characterCount: number;
+  /**
+   * Translation confidence percentage
+   */
+  confidence?: number | null;
+  isFavorite?: boolean | null;
+  /**
+   * Stores the full detailed translation result for complex translations
+   */
+  detailedResult?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Time taken to process the translation
+   */
+  processingTime?: number | null;
+  aiModel?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-progress".
+ */
+export interface UserProgress {
+  id: string;
+  customer: string | Customer;
+  currentStreak?: number | null;
+  longestStreak?: number | null;
+  lastActivityDate?: string | null;
+  totalWordsLearned?: number | null;
+  masteredWords?: number | null;
+  learningWords?: number | null;
+  newWords?: number | null;
+  totalTranslations?: number | null;
+  todayTranslations?: number | null;
+  thisWeekTranslations?: number | null;
+  averageAccuracy?: number | null;
+  totalStudyTimeMinutes?: number | null;
+  todayStudyTimeMinutes?: number | null;
+  averageStudyTimePerDay?: number | null;
+  currentLevel?: ('beginner' | 'elementary' | 'intermediate' | 'upper-intermediate' | 'advanced' | 'expert') | null;
+  totalAchievements?: number | null;
+  experiencePoints?: number | null;
+  weeklyActivity?:
+    | {
+        day: string;
+        wordsLearned?: number | null;
+        accuracy?: number | null;
+        studyTimeMinutes?: number | null;
+        translationsCount?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  averageResponseTime?: number | null;
+  difficultyBreakdown?: {
+    easy?: {
+      accuracy?: number | null;
+      count?: number | null;
+    };
+    medium?: {
+      accuracy?: number | null;
+      count?: number | null;
+    };
+    hard?: {
+      accuracy?: number | null;
+      count?: number | null;
+    };
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "learning-goals".
+ */
+export interface LearningGoal {
+  id: string;
+  customer: string | Customer;
+  title: string;
+  description?: string | null;
+  category: 'daily' | 'weekly' | 'monthly' | 'custom';
+  target: number;
+  current?: number | null;
+  unit: 'words' | 'translations' | 'minutes' | 'days' | 'sessions';
+  deadline: string;
+  status?: ('active' | 'completed' | 'overdue' | 'paused') | null;
+  priority?: ('low' | 'medium' | 'high') | null;
+  isRecurring?: boolean | null;
+  recurringPeriod?: ('daily' | 'weekly' | 'monthly') | null;
+  completedAt?: string | null;
+  /**
+   * Achievement or reward for completing this goal
+   */
+  reward?: string | null;
+  milestones?:
+    | {
+        percentage: number;
+        description: string;
+        achieved?: boolean | null;
+        achievedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-preferences".
+ */
+export interface UserPreference {
+  id: string;
+  customer: string | Customer;
+  preferredLanguagePair?: ('en-id' | 'id-en' | 'en-es' | 'en-fr') | null;
+  nativeLanguage?: string | null;
+  learningLanguages?:
+    | {
+        language: string;
+        proficiencyLevel?:
+          | ('beginner' | 'elementary' | 'intermediate' | 'upper-intermediate' | 'advanced' | 'expert')
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  defaultTranslationMode?: ('simple' | 'detailed') | null;
+  autoSaveTranslations?: boolean | null;
+  autoAddToVocabulary?: boolean | null;
+  dailyGoalWords?: number | null;
+  dailyGoalTranslations?: number | null;
+  /**
+   * Time for daily study reminders (24-hour format)
+   */
+  studyReminderTime?: string | null;
+  weeklyGoalWords?: number | null;
+  theme?: ('light' | 'dark' | 'system') | null;
+  fontSize?: ('small' | 'medium' | 'large') | null;
+  showPronunciation?: boolean | null;
+  enableSoundEffects?: boolean | null;
+  emailNotifications?: {
+    dailyReminders?: boolean | null;
+    weeklyProgress?: boolean | null;
+    achievements?: boolean | null;
+    goalDeadlines?: boolean | null;
+  };
+  pushNotifications?: {
+    studyReminders?: boolean | null;
+    streakReminders?: boolean | null;
+    newFeatures?: boolean | null;
+  };
+  profileVisibility?: ('public' | 'friends' | 'private') | null;
+  shareProgress?: boolean | null;
+  dataCollection?: boolean | null;
+  aiModelPreference?: ('balanced' | 'fast' | 'accurate') | null;
+  maxTranslationLength?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "achievements".
+ */
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  category: 'vocabulary' | 'translation' | 'streak' | 'study-time' | 'accuracy' | 'goals' | 'special';
+  difficulty: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
+  /**
+   * Lucide icon name for the achievement
+   */
+  icon?: string | null;
+  badgeImage?: (string | null) | Media;
+  color?: string | null;
+  requirements: {
+    type:
+      | 'words_learned'
+      | 'translations_count'
+      | 'streak_days'
+      | 'study_time_hours'
+      | 'accuracy_percentage'
+      | 'goals_completed'
+      | 'custom';
+    target: number;
+    /**
+     * JSON object describing custom achievement conditions
+     */
+    customCondition?: string | null;
+  };
+  rewards?: {
+    experiencePoints?: number | null;
+    title?: string | null;
+    specialFeature?: string | null;
+  };
+  isActive?: boolean | null;
+  /**
+   * Hidden achievements are not shown until unlocked
+   */
+  isHidden?: boolean | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-achievements".
+ */
+export interface UserAchievement {
+  id: string;
+  customer: string | Customer;
+  achievement: string | Achievement;
+  unlockedAt: string;
+  progress?: number | null;
+  isNotified?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "practice-sessions".
+ */
+export interface PracticeSession {
+  id: string;
+  customer: string | Customer;
+  sessionType: 'flashcard' | 'multiple_choice' | 'fill_blanks' | 'listening' | 'spelling' | 'mixed';
+  words: {
+    vocabulary: string | Vocabulary;
+    isCorrect: boolean;
+    timeSpent: number;
+    attempts: number;
+    userAnswer?: string | null;
+    correctAnswer: string;
+    id?: string | null;
+  }[];
+  score: number;
+  totalWords: number;
+  correctWords: number;
+  /**
+   * Time spent in seconds
+   */
+  timeSpent: number;
+  difficulty?: ('beginner' | 'intermediate' | 'advanced') | null;
+  completedAt: string;
+  /**
+   * Additional session metadata (settings, preferences, etc.)
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -210,6 +533,38 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'customers';
         value: string | Customer;
+      } | null)
+    | ({
+        relationTo: 'vocabulary';
+        value: string | Vocabulary;
+      } | null)
+    | ({
+        relationTo: 'translation-history';
+        value: string | TranslationHistory;
+      } | null)
+    | ({
+        relationTo: 'user-progress';
+        value: string | UserProgress;
+      } | null)
+    | ({
+        relationTo: 'learning-goals';
+        value: string | LearningGoal;
+      } | null)
+    | ({
+        relationTo: 'user-preferences';
+        value: string | UserPreference;
+      } | null)
+    | ({
+        relationTo: 'achievements';
+        value: string | Achievement;
+      } | null)
+    | ({
+        relationTo: 'user-achievements';
+        value: string | UserAchievement;
+      } | null)
+    | ({
+        relationTo: 'practice-sessions';
+        value: string | PracticeSession;
       } | null);
   globalSlug?: string | null;
   user:
@@ -311,6 +666,265 @@ export interface CustomersSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vocabulary_select".
+ */
+export interface VocabularySelect<T extends boolean = true> {
+  customer?: T;
+  word?: T;
+  translation?: T;
+  pronunciation?: T;
+  definition?: T;
+  example?: T;
+  difficulty?: T;
+  status?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  practiceCount?: T;
+  accuracy?: T;
+  lastPracticed?: T;
+  sourceLanguage?: T;
+  targetLanguage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "translation-history_select".
+ */
+export interface TranslationHistorySelect<T extends boolean = true> {
+  customer?: T;
+  originalText?: T;
+  translatedText?: T;
+  sourceLanguage?: T;
+  targetLanguage?: T;
+  mode?: T;
+  characterCount?: T;
+  confidence?: T;
+  isFavorite?: T;
+  detailedResult?: T;
+  processingTime?: T;
+  aiModel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-progress_select".
+ */
+export interface UserProgressSelect<T extends boolean = true> {
+  customer?: T;
+  currentStreak?: T;
+  longestStreak?: T;
+  lastActivityDate?: T;
+  totalWordsLearned?: T;
+  masteredWords?: T;
+  learningWords?: T;
+  newWords?: T;
+  totalTranslations?: T;
+  todayTranslations?: T;
+  thisWeekTranslations?: T;
+  averageAccuracy?: T;
+  totalStudyTimeMinutes?: T;
+  todayStudyTimeMinutes?: T;
+  averageStudyTimePerDay?: T;
+  currentLevel?: T;
+  totalAchievements?: T;
+  experiencePoints?: T;
+  weeklyActivity?:
+    | T
+    | {
+        day?: T;
+        wordsLearned?: T;
+        accuracy?: T;
+        studyTimeMinutes?: T;
+        translationsCount?: T;
+        id?: T;
+      };
+  averageResponseTime?: T;
+  difficultyBreakdown?:
+    | T
+    | {
+        easy?:
+          | T
+          | {
+              accuracy?: T;
+              count?: T;
+            };
+        medium?:
+          | T
+          | {
+              accuracy?: T;
+              count?: T;
+            };
+        hard?:
+          | T
+          | {
+              accuracy?: T;
+              count?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "learning-goals_select".
+ */
+export interface LearningGoalsSelect<T extends boolean = true> {
+  customer?: T;
+  title?: T;
+  description?: T;
+  category?: T;
+  target?: T;
+  current?: T;
+  unit?: T;
+  deadline?: T;
+  status?: T;
+  priority?: T;
+  isRecurring?: T;
+  recurringPeriod?: T;
+  completedAt?: T;
+  reward?: T;
+  milestones?:
+    | T
+    | {
+        percentage?: T;
+        description?: T;
+        achieved?: T;
+        achievedAt?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-preferences_select".
+ */
+export interface UserPreferencesSelect<T extends boolean = true> {
+  customer?: T;
+  preferredLanguagePair?: T;
+  nativeLanguage?: T;
+  learningLanguages?:
+    | T
+    | {
+        language?: T;
+        proficiencyLevel?: T;
+        id?: T;
+      };
+  defaultTranslationMode?: T;
+  autoSaveTranslations?: T;
+  autoAddToVocabulary?: T;
+  dailyGoalWords?: T;
+  dailyGoalTranslations?: T;
+  studyReminderTime?: T;
+  weeklyGoalWords?: T;
+  theme?: T;
+  fontSize?: T;
+  showPronunciation?: T;
+  enableSoundEffects?: T;
+  emailNotifications?:
+    | T
+    | {
+        dailyReminders?: T;
+        weeklyProgress?: T;
+        achievements?: T;
+        goalDeadlines?: T;
+      };
+  pushNotifications?:
+    | T
+    | {
+        studyReminders?: T;
+        streakReminders?: T;
+        newFeatures?: T;
+      };
+  profileVisibility?: T;
+  shareProgress?: T;
+  dataCollection?: T;
+  aiModelPreference?: T;
+  maxTranslationLength?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "achievements_select".
+ */
+export interface AchievementsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  category?: T;
+  difficulty?: T;
+  icon?: T;
+  badgeImage?: T;
+  color?: T;
+  requirements?:
+    | T
+    | {
+        type?: T;
+        target?: T;
+        customCondition?: T;
+      };
+  rewards?:
+    | T
+    | {
+        experiencePoints?: T;
+        title?: T;
+        specialFeature?: T;
+      };
+  isActive?: T;
+  isHidden?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-achievements_select".
+ */
+export interface UserAchievementsSelect<T extends boolean = true> {
+  customer?: T;
+  achievement?: T;
+  unlockedAt?: T;
+  progress?: T;
+  isNotified?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "practice-sessions_select".
+ */
+export interface PracticeSessionsSelect<T extends boolean = true> {
+  customer?: T;
+  sessionType?: T;
+  words?:
+    | T
+    | {
+        vocabulary?: T;
+        isCorrect?: T;
+        timeSpent?: T;
+        attempts?: T;
+        userAnswer?: T;
+        correctAnswer?: T;
+        id?: T;
+      };
+  score?: T;
+  totalWords?: T;
+  correctWords?: T;
+  timeSpent?: T;
+  difficulty?: T;
+  completedAt?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

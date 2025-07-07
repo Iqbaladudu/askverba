@@ -44,6 +44,16 @@
   --color-brand-primary: #ff5b9e;
   --color-brand-secondary: #e54a8c;
   --color-brand-accent: #ffbd83;
+  --color-primary-50: #fef2f7;
+  --color-primary-100: #fde6ef;
+  --color-primary-200: #fccde1;
+  --color-primary-300: #faa4c8;
+  --color-primary-400: #f670a6;
+  --color-primary-500: #ff5b9e;
+  --color-primary-600: #e54a8c;
+  --color-primary-700: #c73876;
+  --color-primary-800: #a52a61;
+  --color-primary-900: #8a2454;
 }
 
 :root {
@@ -144,4 +154,38 @@
   .bg-brand-accent {
     background-color: var(--color-brand-accent);
   }
+
+  /* Primary color variations */
+  .text-primary-50 { color: var(--color-primary-50); }
+  .text-primary-100 { color: var(--color-primary-100); }
+  .text-primary-200 { color: var(--color-primary-200); }
+  .text-primary-300 { color: var(--color-primary-300); }
+  .text-primary-400 { color: var(--color-primary-400); }
+  .text-primary-500 { color: var(--color-primary-500); }
+  .text-primary-600 { color: var(--color-primary-600); }
+  .text-primary-700 { color: var(--color-primary-700); }
+  .text-primary-800 { color: var(--color-primary-800); }
+  .text-primary-900 { color: var(--color-primary-900); }
+
+  .bg-primary-50 { background-color: var(--color-primary-50); }
+  .bg-primary-100 { background-color: var(--color-primary-100); }
+  .bg-primary-200 { background-color: var(--color-primary-200); }
+  .bg-primary-300 { background-color: var(--color-primary-300); }
+  .bg-primary-400 { background-color: var(--color-primary-400); }
+  .bg-primary-500 { background-color: var(--color-primary-500); }
+  .bg-primary-600 { background-color: var(--color-primary-600); }
+  .bg-primary-700 { background-color: var(--color-primary-700); }
+  .bg-primary-800 { background-color: var(--color-primary-800); }
+  .bg-primary-900 { background-color: var(--color-primary-900); }
+
+  .border-primary-50 { border-color: var(--color-primary-50); }
+  .border-primary-100 { border-color: var(--color-primary-100); }
+  .border-primary-200 { border-color: var(--color-primary-200); }
+  .border-primary-300 { border-color: var(--color-primary-300); }
+  .border-primary-400 { border-color: var(--color-primary-400); }
+  .border-primary-500 { border-color: var(--color-primary-500); }
+  .border-primary-600 { border-color: var(--color-primary-600); }
+  .border-primary-700 { border-color: var(--color-primary-700); }
+  .border-primary-800 { border-color: var(--color-primary-800); }
+  .border-primary-900 { border-color: var(--color-primary-900); }
 }

@@ -19,12 +19,13 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import { loginCustomerAction } from 'action/login.action'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
 export const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login } = useAuth()
 
   const loginMutation = useMutation({
@@ -37,8 +38,9 @@ export const LoginForm: React.FC = () => {
         form.reset()
         // Use auth context to store authentication state
         login(result.customer, result.token)
-        // Redirect to dashboard or home page
-        router.push('/')
+        // Redirect to original page or dashboard
+        const redirectTo = searchParams.get('redirect') || '/dashboard'
+        router.push(redirectTo)
       } else {
         toast.error(result.error || 'Login failed')
       }
@@ -51,6 +53,10 @@ export const LoginForm: React.FC = () => {
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     mode: 'onTouched',
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   })
 
   const onSubmit = (values: LoginSchema) => {

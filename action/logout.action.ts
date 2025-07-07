@@ -1,29 +1,30 @@
 'use server'
 
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { clearAuthCookies } from '@/lib/server-cookies'
 
 type LogoutCustomerResult = {
   success: boolean
   error?: string
 }
 
-export async function logoutCustomerAction(token?: string): Promise<LogoutCustomerResult> {
+export async function logoutCustomerAction(): Promise<LogoutCustomerResult> {
   try {
-    const payload = await getPayload({ config })
-
-    // Logout using Payload's auth
-    await payload.logout({
-      collection: 'customers',
-    })
+    // Clear server-side cookies (main logout action)
+    await clearAuthCookies()
 
     return {
       success: true,
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Logout error:', error)
-    
-    // Even if logout fails on server, we should still clear client-side auth
+
+    // Even if logout fails, we should still try to clear cookies
+    try {
+      await clearAuthCookies()
+    } catch (clearError) {
+      console.error('Error clearing cookies:', clearError)
+    }
+
     return {
       success: true, // Return success to clear client-side auth
     }

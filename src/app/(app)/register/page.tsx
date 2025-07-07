@@ -1,8 +1,11 @@
+'use client'
+
 import React from 'react'
 import { RegisterForm } from '@/components/auth/RegisterForm'
 import Link from 'next/link'
+import { withGuestOnly } from '@/components/auth/withAuth'
 
-export default function RegisterPage() {
+function RegisterPage() {
   return (
     <main className="min-h-screen flex flex-col justify-center bg-gray-50 dark:bg-gray-950">
       <div className="container mx-auto px-4">
@@ -18,3 +21,6 @@ export default function RegisterPage() {
     </main>
   )
 }
+
+// Export the guest-only protected page
+export default withGuestOnly(RegisterPage)

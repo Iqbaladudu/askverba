@@ -1,5 +1,23 @@
 import { z } from 'zod'
 
+// Schema for vocabulary item in simple translation
+const vocabularyItemSchema = z.object({
+  word: z.string(),
+  translation: z.string(),
+  type: z.enum(['noun', 'verb', 'adjective', 'phrase', 'idiom', 'adverb', 'preposition']),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+  context: z.string(),
+})
+
+// Schema for simple translation with vocabulary extraction
+export const simpleTranslationSchema = z.object({
+  translation: z.string(),
+  vocabulary: z.array(vocabularyItemSchema),
+})
+
+export type SimpleTranslationResult = z.infer<typeof simpleTranslationSchema>
+export type VocabularyItem = z.infer<typeof vocabularyItemSchema>
+
 // Schema for single term data (3 words or less)
 const singleTermDataSchema = z.object({
   title: z.string(),

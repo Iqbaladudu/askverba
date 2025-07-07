@@ -27,28 +27,33 @@ export const Section: React.FC<SectionProps> = ({
       open={isExpanded}
       onOpenChange={() => onToggle(id)}
       className={`mb-3 border rounded-lg overflow-hidden ${
-        isHighlighted ? 'border-[#FF5B9E]' : 'border-gray-200 dark:border-gray-800'
+        isHighlighted ? 'border-primary-500' : 'border-neutral-200 dark:border-neutral-800'
       }`}
     >
-      <CollapsibleTrigger className="flex w-full items-center justify-between p-4 bg-white dark:bg-gray-950 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+      <CollapsibleTrigger className="flex w-full items-center justify-between p-4 bg-white dark:bg-neutral-950 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors">
         <div className="flex items-center gap-3">
           <div
             className={`p-2 rounded-md ${
               isHighlighted
-                ? 'bg-[#FF5B9E]/10 text-[#FF5B9E]'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                ? 'bg-primary-500/10 text-primary-500'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
             }`}
           >
             {icon}
           </div>
-          <span className="font-medium text-sm">{title}</span>
+          <span className="font-medium text-sm text-neutral-800 dark:text-neutral-200">
+            {title}
+          </span>
         </div>
         <ChevronDown
-          className={`h-5 w-5 transition-transform ${isExpanded ? 'transform rotate-180' : ''}`}
+          className={`h-5 w-5 transition-transform text-neutral-500 dark:text-neutral-400 ${isExpanded ? 'transform rotate-180' : ''}`}
         />
       </CollapsibleTrigger>
-      <CollapsibleContent className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
-        <div className="p-4" dangerouslySetInnerHTML={{ __html: formatContent(content) }} />
+      <CollapsibleContent className="bg-white dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800">
+        <div
+          className="p-4 text-neutral-800 dark:text-neutral-200"
+          dangerouslySetInnerHTML={{ __html: formatContent(content) }}
+        />
       </CollapsibleContent>
     </Collapsible>
   )

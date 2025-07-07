@@ -1,15 +1,18 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { TranslationResult, TranslationMode } from '@/types/translator'
+import { SimpleTranslationResult } from '@/components/schema'
 import { SimpleOutput } from './simpleOutput'
+import { SimpleOutputWithVocabulary } from './SimpleOutputWithVocabulary'
 import { SingleTermOutput } from './singleTermOutput'
 import { ParagraphOutput } from './paragraphOutput'
 
 interface TranslationOutputProps {
-  translationResult: string | TranslationResult | null
+  translationResult: string | SimpleTranslationResult | TranslationResult | null
   translationMode: TranslationMode
   expandedSections: string[]
   toggleSection: (id: string) => void
+  onSaveVocabulary?: (vocabulary: any[]) => Promise<void>
 }
 
 export const TranslationOutput: React.FC<TranslationOutputProps> = ({
@@ -17,6 +20,7 @@ export const TranslationOutput: React.FC<TranslationOutputProps> = ({
   translationMode,
   expandedSections,
   toggleSection,
+  onSaveVocabulary,
 }) => {
   if (!translationResult) {
     return null
@@ -28,12 +32,22 @@ export const TranslationOutput: React.FC<TranslationOutputProps> = ({
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="border-t border-gray-200 dark:border-gray-800"
+      className="border-t border-neutral-200 dark:border-neutral-800"
     >
       {/* Simple translation display */}
       {translationMode === 'simple' && typeof translationResult === 'string' && (
         <SimpleOutput translation={translationResult} />
       )}
+
+      {/* Simple translation with vocabulary display */}
+      {translationMode === 'simple' &&
+        typeof translationResult === 'object' &&
+        'translation' in translationResult && (
+          <SimpleOutputWithVocabulary
+            result={translationResult as SimpleTranslationResult}
+            onSaveVocabulary={onSaveVocabulary}
+          />
+        )}
 
       {/* Detailed translation display - Single Term */}
       {translationMode === 'detailed' &&
