@@ -13,10 +13,12 @@ import {
   Flame,
   Target,
   TrendingUp,
+  Loader2,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
+import { useVocabulary, useUserProgress, usePractice } from '@/hooks/usePayloadData'
 
 interface SidebarProps {
   className?: string
@@ -32,11 +34,13 @@ const navigationItems = [
     title: 'Vocabulary',
     href: '/dashboard/vocabulary',
     icon: BookOpen,
+    beta: true,
   },
   {
     title: 'Analytics',
     href: '/dashboard/analytics',
     icon: BarChart3,
+    beta: true,
   },
   {
     title: 'History',
@@ -50,8 +54,41 @@ const navigationItems = [
   },
 ]
 
+// Helper function to format streak display
+const formatStreak = (streak: number): string => {
+  if (streak === 0) return '0 days'
+  if (streak === 1) return '1 day'
+  return `${streak} days`
+}
+
 export function DashboardSidebar({ className }: SidebarProps) {
   const pathname = usePathname()
+
+  // Fetch real data from hooks
+  const {
+    vocabulary,
+    stats: vocabStats,
+    loading: vocabLoading,
+    error: vocabError,
+  } = useVocabulary({ limit: 3 })
+  const { progress, loading: progressLoading, error: progressError } = useUserProgress()
+  const { stats: practiceStats, loading: practiceLoading, error: practiceError } = usePractice()
+
+  // Calculate real stats
+  const isLoading = vocabLoading || progressLoading || practiceLoading
+  const hasError = vocabError || progressError || practiceError
+  const streak = practiceStats?.currentStreak || progress?.currentStreak || 0
+  const totalWords = vocabStats?.totalWords || 0
+  const accuracy = practiceStats?.averageScore || progress?.averageAccuracy || 0
+
+  // Get recent vocabulary items (last 3)
+  const recentWords = (vocabulary || [])
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3)
+    .map((word) => ({
+      word: word.word,
+      translation: word.translation,
+    }))
 
   return (
     <aside
@@ -64,39 +101,56 @@ export function DashboardSidebar({ className }: SidebarProps) {
             <CardTitle className="text-sm font-medium text-primary-700">Your Progress</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Streak */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Flame className="h-4 w-4 text-orange-500" />
-                <span className="text-sm font-medium">Streak</span>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-4 w-4 animate-spin text-primary-500" />
+                <span className="ml-2 text-xs text-neutral-600">Loading...</span>
               </div>
-              <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                7 days
-              </Badge>
-            </div>
-
-            {/* Vocabulary Count */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-blue-500" />
-                <span className="text-sm font-medium">Words</span>
+            ) : hasError ? (
+              <div className="text-center py-4">
+                <TrendingUp className="h-8 w-8 text-neutral-400 mx-auto mb-2" />
+                <p className="text-xs text-neutral-500">Unable to load stats</p>
+                <p className="text-xs text-neutral-400">Please try again later</p>
               </div>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                142
-              </Badge>
-            </div>
-
-            {/* Accuracy */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Target className="h-4 w-4 text-green-500" />
-                  <span className="text-sm font-medium">Accuracy</span>
+            ) : (
+              <>
+                {/* Streak */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Flame className="h-4 w-4 text-orange-500" />
+                    <span className="text-sm font-medium">Streak</span>
+                  </div>
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                    {formatStreak(streak)}
+                  </Badge>
                 </div>
-                <span className="text-sm font-semibold text-green-700">85%</span>
-              </div>
-              <Progress value={85} className="h-2" />
-            </div>
+
+                {/* Vocabulary Count */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium">Words</span>
+                  </div>
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                    {totalWords}
+                  </Badge>
+                </div>
+
+                {/* Accuracy */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">Accuracy</span>
+                    </div>
+                    <span className="text-sm font-semibold text-green-700">
+                      {Math.round(accuracy)}%
+                    </span>
+                  </div>
+                  <Progress value={accuracy} className="h-2" />
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -119,7 +173,17 @@ export function DashboardSidebar({ className }: SidebarProps) {
                 )}
               >
                 <item.icon className="h-4 w-4" />
-                {item.title}
+                <span className="flex items-center gap-2">
+                  {item.title}
+                  {item.beta && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-orange-100 text-orange-700 text-xs px-1.5 py-0.5 h-auto font-medium"
+                    >
+                      BETA
+                    </Badge>
+                  )}
+                </span>
               </Link>
             )
           })}
@@ -131,16 +195,25 @@ export function DashboardSidebar({ className }: SidebarProps) {
             <CardTitle className="text-sm font-medium text-neutral-700">Recent Words</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {[
-              { word: 'beautiful', translation: 'indah' },
-              { word: 'challenge', translation: 'tantangan' },
-              { word: 'wonderful', translation: 'menakjubkan' },
-            ].map((item, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <span className="font-medium text-neutral-700">{item.word}</span>
-                <span className="text-neutral-500">{item.translation}</span>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-4 w-4 animate-spin text-primary-500" />
+                <span className="ml-2 text-xs text-neutral-600">Loading...</span>
               </div>
-            ))}
+            ) : recentWords.length === 0 ? (
+              <div className="text-center py-4">
+                <BookOpen className="h-8 w-8 text-neutral-400 mx-auto mb-2" />
+                <p className="text-xs text-neutral-500">No vocabulary yet</p>
+                <p className="text-xs text-neutral-400">Start learning!</p>
+              </div>
+            ) : (
+              recentWords.map((item, index) => (
+                <div key={index} className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-neutral-700">{item.word}</span>
+                  <span className="text-neutral-500">{item.translation}</span>
+                </div>
+              ))
+            )}
             <Link
               href="/dashboard/vocabulary"
               className="block text-center text-xs text-primary-600 hover:text-primary-700 font-medium mt-3 pt-3 border-t border-neutral-100"
