@@ -28,6 +28,7 @@ const singleTermDataSchema = z.object({
   collocations: z.string(),
   comparisons: z.string(),
   usage_tips: z.string(),
+  vocabulary: z.array(vocabularyItemSchema), // Add vocabulary extraction
 })
 
 // Schema for paragraph data (more than 3 words)
@@ -40,6 +41,7 @@ const paragraphDataSchema = z.object({
   stylistic_notes: z.string(),
   alternative_translations: z.string(),
   learning_points: z.string(),
+  vocabulary: z.array(vocabularyItemSchema), // Add vocabulary extraction
 })
 
 // Discriminated union schema

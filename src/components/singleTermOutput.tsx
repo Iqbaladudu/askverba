@@ -15,18 +15,22 @@ import {
 } from 'lucide-react'
 import { OutputActions } from './outputActions'
 import { Section } from './section'
+import { VocabularySection } from './VocabularySection'
 import { getCleanTitle, formatContent, handleCopy } from '@/lib/utils'
+import { VocabularyItem } from '@/components/schema'
 
 interface SingleTermOutputProps {
   data: SingleTermTranslation
   expandedSections: string[]
   toggleSection: (id: string) => void
+  onSaveVocabulary?: (vocabulary: VocabularyItem[]) => Promise<void>
 }
 
 export const SingleTermOutput: React.FC<SingleTermOutputProps> = ({
   data,
   expandedSections,
   toggleSection,
+  onSaveVocabulary,
 }) => {
   const [copiedAll, setCopiedAll] = useState(false)
   const cleanTitle = getCleanTitle(data.title)
@@ -137,6 +141,17 @@ export const SingleTermOutput: React.FC<SingleTermOutputProps> = ({
           isHighlighted={true}
         />
       </ScrollArea>
+
+      {/* Vocabulary Section */}
+      {data.vocabulary && data.vocabulary.length > 0 && (
+        <div className="mt-4">
+          <VocabularySection
+            vocabulary={data.vocabulary}
+            onSaveVocabulary={onSaveVocabulary}
+            title="📚 Vocabulary from Analysis"
+          />
+        </div>
+      )}
 
       {/* Action buttons */}
       <div className="flex justify-end mt-4">

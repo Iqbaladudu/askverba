@@ -8,10 +8,20 @@ export function getAuthTokenFromDocument(): string | null {
 
   try {
     const cookies = document.cookie.split(';')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('getAuthTokenFromDocument: All cookies:', cookies)
+    }
     const tokenCookie = cookies.find((cookie) => cookie.trim().startsWith(`${TOKEN_COOKIE}=`))
+    if (process.env.NODE_ENV === 'development') {
+      console.log('getAuthTokenFromDocument: Token cookie found:', !!tokenCookie)
+    }
     if (tokenCookie) {
       const token = tokenCookie.split('=')[1]
-      return token ? decodeURIComponent(token) : null
+      const decodedToken = token ? decodeURIComponent(token) : null
+      if (process.env.NODE_ENV === 'development') {
+        console.log('getAuthTokenFromDocument: Token extracted:', !!decodedToken)
+      }
+      return decodedToken
     }
     return null
   } catch (error) {
@@ -25,11 +35,25 @@ export function getCustomerFromDocument(): any | null {
 
   try {
     const cookies = document.cookie.split(';')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('getCustomerFromDocument: All cookies:', cookies)
+    }
     const customerCookie = cookies.find((cookie) => cookie.trim().startsWith(`${CUSTOMER_COOKIE}=`))
+    if (process.env.NODE_ENV === 'development') {
+      console.log('getCustomerFromDocument: Customer cookie found:', !!customerCookie)
+    }
 
     if (customerCookie) {
       const customerData = customerCookie.split('=')[1]
-      return JSON.parse(decodeURIComponent(customerData))
+      const parsedCustomer = JSON.parse(decodeURIComponent(customerData))
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          'getCustomerFromDocument: Customer parsed:',
+          !!parsedCustomer,
+          parsedCustomer?.email,
+        )
+      }
+      return parsedCustomer
     }
     return null
   } catch (error) {

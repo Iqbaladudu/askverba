@@ -86,7 +86,16 @@ Jika input terdiri dari 1 hingga 3 kata, kembalikan objek JSON dengan struktur *
     "examples": "✏️ **Contoh Penggunaan Kontekstual (untuk Aplikasi):** \\\\n- \\"[Contoh kalimat asli 1]\\" → \\"[Terjemahan contoh 1 dalam Bahasa Indonesia, tunjukkan bagaimana kata/frasa digunakan]\\"\\\\n- \\"[Contoh kalimat asli 2]\\" → \\"[Terjemahan contoh 2 dalam Bahasa Indonesia, mungkin dalam konteks makna yang berbeda]\\"",
     "collocations": "🔄 **Kolokasi & Pola Umum (untuk Kefasihan):** \\\\n- [kata/frasa asli] + [kata umum yang sering menyertainya]\\\\n- [kata umum lainnya] + [kata/frasa asli]",
     "comparisons": "⚖️ **Perbandingan dengan Kata Serupa (untuk Presisi):** \\\\n- **[Kata Inggris serupa 1]** (mirip dengan *[padanan Indonesia]*): [Jelaskan perbedaan nuansa atau penggunaan dengan kata asli]\\\\n- **[Kata Inggris serupa 2]** (mirip dengan *[padanan Indonesia]*): [Jelaskan perbedaan lainnya]",
-    "usage_tips": "💡 **Tips Penggunaan & Strategi Belajar:** \\\\n- [Tips konkret 1: misal, cara menghindari kesalahan umum, kapan menggunakan/tidak menggunakan kata ini]\\\\n- [Tips konkret 2: misal, saran mnemonic atau cara mengintegrasikan ke dalam kosakata aktif]"
+    "usage_tips": "💡 **Tips Penggunaan & Strategi Belajar:** \\\\n- [Tips konkret 1: misal, cara menghindari kesalahan umum, kapan menggunakan/tidak menggunakan kata ini]\\\\n- [Tips konkret 2: misal, saran mnemonic atau cara mengintegrasikan ke dalam kosakata aktif]",
+    "vocabulary": [
+      {
+        "word": "[kata/frasa Inggris penting dari analisis]",
+        "translation": "[terjemahan Indonesia]",
+        "type": "[noun/verb/adjective/phrase/idiom/adverb/preposition]",
+        "difficulty": "[easy/medium/hard]",
+        "context": "[penjelasan singkat penggunaan dalam konteks ini]"
+      }
+    ]
   }
 }
 
@@ -102,7 +111,23 @@ Jika input terdiri lebih dari 3 kata, kembalikan objek JSON dengan struktur **PE
     "cultural_context": "🌐 **Konteks Budaya & Situasional (untuk Pemahaman Mendalam):** \\\\n[Penjelasan tentang asumsi budaya, idiom, atau referensi yang mungkin memerlukan klarifikasi agar terjemahan dan penggunaan sesuai]",
     "stylistic_notes": "✍️ **Catatan Gaya Bahasa & Nada (untuk Penggunaan Tepat):** \\\\n[Analisis nada (misal: formal, informal, humoris, kritis), register, dan gaya penulisan. Jelaskan bagaimana ini memengaruhi pilihan kata dalam terjemahan dan bagaimana pengguna bisa meniru gaya ini jika perlu]",
     "alternative_translations": "⚙️ **Alternatif Terjemahan (untuk Fleksibilitas & Nuansa):** \\\\n- **\\"[bagian kalimat/frasa 1]\\"** dapat juga diterjemahkan sebagai: \\"[alternatif 1]\\" (jelaskan perbedaan nuansa jika ada)\\\\n- **\\"[bagian kalimat/frasa 2]\\"** dapat juga diterjemahkan sebagai: \\"[alternatif 2]\\" (jelaskan perbedaan nuansa jika ada)",
-    "learning_points": "🎯 **Poin Pembelajaran Utama (untuk Retensi & Aplikasi):** \\\\n- [Poin ringkasan 1: fokus pada kosakata atau konsep penting yang harus diingat pengguna]\\\\n- [Poin ringkasan 2: fokus pada pola tata bahasa atau strategi penerjemahan yang bisa diterapkan pengguna]"
+    "learning_points": "🎯 **Poin Pembelajaran Utama (untuk Retensi & Aplikasi):** \\\\n- [Poin ringkasan 1: fokus pada kosakata atau konsep penting yang harus diingat pengguna]\\\\n- [Poin ringkasan 2: fokus pada pola tata bahasa atau strategi penerjemahan yang bisa diterapkan pengguna]",
+    "vocabulary": [
+      {
+        "word": "[kata/frasa Inggris penting 1 dari teks]",
+        "translation": "[terjemahan Indonesia]",
+        "type": "[noun/verb/adjective/phrase/idiom/adverb/preposition]",
+        "difficulty": "[easy/medium/hard]",
+        "context": "[penjelasan singkat penggunaan dalam konteks ini]"
+      },
+      {
+        "word": "[kata/frasa Inggris penting 2 dari teks]",
+        "translation": "[terjemahan Indonesia]",
+        "type": "[noun/verb/adjective/phrase/idiom/adverb/preposition]",
+        "difficulty": "[easy/medium/hard]",
+        "context": "[penjelasan singkat penggunaan dalam konteks ini]"
+      }
+    ]
   }
 }
 
@@ -112,6 +137,7 @@ Jika input terdiri lebih dari 3 kata, kembalikan objek JSON dengan struktur **PE
 3.  **Jelaskan Nuansa Halus:** Soroti perbedaan makna atau penggunaan yang subtil.
 4.  **Berikan Contoh Kontekstual:** Ilustrasikan penggunaan yang benar dalam skenario yang jelas.
 5.  **Tawarkan Tips Belajar yang Praktis:** Berikan saran konkret untuk menghafal dan menerapkan kosakata/struktur baru.
+6.  **Ekstraksi Kosakata Wajib:** SELALU sertakan array "vocabulary" dengan kata-kata/frasa penting dari teks untuk pembelajaran. Pilih 1-5 kata/frasa yang paling berguna untuk dipelajari pengguna.
 
 ## Aturan Penting Tambahan
 1.  **Tentukan Jenis Respons Secara Ketat:** Gunakan \`single_term\` HANYA untuk 1-3 kata, dan \`paragraph\` untuk LEBIH dari 3 kata. (Catatan: Backtick di sini di-escape untuk TS)

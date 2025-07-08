@@ -15,7 +15,9 @@ import {
   ClipboardCopy,
 } from 'lucide-react'
 import { OutputActions } from './outputActions'
+import { VocabularySection } from './VocabularySection'
 import { getCleanTitle, handleCopy } from '@/lib/utils'
+import { VocabularyItem } from '@/components/schema'
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
 import remarkMath from 'remark-math'
@@ -23,9 +25,10 @@ import 'katex/dist/katex.min.css' // `rehype-katex` does not import the CSS for 
 
 interface ParagraphOutputProps {
   data: ParagraphTranslation
+  onSaveVocabulary?: (vocabulary: VocabularyItem[]) => Promise<void>
 }
 
-export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
+export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data, onSaveVocabulary }) => {
   const [copiedAll, setCopiedAll] = useState(false)
   const cleanTitle = getCleanTitle(data.title)
   const fullTranslationText = data.full_translation.replace(
@@ -200,6 +203,17 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Vocabulary Section */}
+      {data.vocabulary && data.vocabulary.length > 0 && (
+        <div className="mt-4">
+          <VocabularySection
+            vocabulary={data.vocabulary}
+            onSaveVocabulary={onSaveVocabulary}
+            title="📚 Vocabulary from Text"
+          />
+        </div>
+      )}
 
       {/* Action buttons */}
       <div className="flex justify-end mt-4">

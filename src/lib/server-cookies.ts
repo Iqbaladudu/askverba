@@ -2,9 +2,9 @@ import { cookies } from 'next/headers'
 
 // Cookie configuration
 const COOKIE_CONFIG = {
-  maxAge: 3600,
-  httpOnly: true,
-  secure: true,
+  maxAge: 7 * 24 * 60 * 60, // 7 days (same as client-side)
+  httpOnly: false, // Allow client-side access for authentication state
+  secure: process.env.NODE_ENV === 'production', // Only secure in production
   sameSite: 'strict' as const,
   path: '/',
 }
@@ -39,10 +39,7 @@ export async function setAuthCookies(token: string, customer: any): Promise<void
     const cookieStore = await cookies()
 
     cookieStore.set(TOKEN_COOKIE, token, COOKIE_CONFIG)
-    cookieStore.set(CUSTOMER_COOKIE, JSON.stringify(customer), {
-      ...COOKIE_CONFIG,
-      httpOnly: false, // Customer data needs to be accessible on client
-    })
+    cookieStore.set(CUSTOMER_COOKIE, JSON.stringify(customer), COOKIE_CONFIG)
   } catch (error) {
     console.error('Error setting auth cookies:', error)
   }

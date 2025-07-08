@@ -1,3 +1,5 @@
+import { VocabularyItem } from '@/components/schema'
+
 // Types for single term translation
 export interface SingleTermTranslation {
   title: string
@@ -8,6 +10,7 @@ export interface SingleTermTranslation {
   collocations: string
   comparisons: string
   usage_tips: string
+  vocabulary: VocabularyItem[]
 }
 
 // Types for paragraph translation
@@ -20,6 +23,7 @@ export interface ParagraphTranslation {
   stylistic_notes: string
   alternative_translations: string
   learning_points: string
+  vocabulary: VocabularyItem[]
 }
 
 // Union type for translation results

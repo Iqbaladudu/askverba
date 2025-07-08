@@ -1,7 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { TranslationResult, TranslationMode } from '@/types/translator'
-import { SimpleTranslationResult } from '@/components/schema'
+import { SimpleTranslationResult, VocabularyItem } from '@/components/schema'
 import { SimpleOutput } from './simpleOutput'
 import { SimpleOutputWithVocabulary } from './SimpleOutputWithVocabulary'
 import { SingleTermOutput } from './singleTermOutput'
@@ -12,7 +12,7 @@ interface TranslationOutputProps {
   translationMode: TranslationMode
   expandedSections: string[]
   toggleSection: (id: string) => void
-  onSaveVocabulary?: (vocabulary: any[]) => Promise<void>
+  onSaveVocabulary?: (vocabulary: VocabularyItem[]) => Promise<void>
 }
 
 export const TranslationOutput: React.FC<TranslationOutputProps> = ({
@@ -52,18 +52,25 @@ export const TranslationOutput: React.FC<TranslationOutputProps> = ({
       {/* Detailed translation display - Single Term */}
       {translationMode === 'detailed' &&
         typeof translationResult === 'object' &&
+        translationResult !== null &&
+        'type' in translationResult &&
         translationResult.type === 'single_term' && (
           <SingleTermOutput
             data={translationResult.data}
             expandedSections={expandedSections}
             toggleSection={toggleSection}
+            onSaveVocabulary={onSaveVocabulary}
           />
         )}
 
       {/* Detailed translation display - Paragraph */}
       {translationMode === 'detailed' &&
         typeof translationResult === 'object' &&
-        translationResult.type === 'paragraph' && <ParagraphOutput data={translationResult.data} />}
+        translationResult !== null &&
+        'type' in translationResult &&
+        translationResult.type === 'paragraph' && (
+          <ParagraphOutput data={translationResult.data} onSaveVocabulary={onSaveVocabulary} />
+        )}
     </motion.div>
   )
 }

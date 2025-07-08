@@ -145,6 +145,7 @@ export async function getUserVocabulary(
       limit,
       page,
       sort,
+      overrideAccess: true, // Bypass access control for vocabulary fetching
     })
 
     console.log('vocabularyService: Database response:', {
@@ -196,6 +197,7 @@ export async function getVocabularyStats(userId: string): Promise<VocabularyStat
         },
       },
       limit: 1000, // Get all for stats calculation
+      overrideAccess: true, // Bypass access control for stats
     })
 
     const docs = response.docs || []
@@ -237,15 +239,29 @@ export async function createVocabularyEntry(
   try {
     const payload = await getPayload({ config })
 
+    // Format tags array to match collection schema
+    const formattedTags = data.tags
+      ? Array.isArray(data.tags)
+        ? data.tags.map((tag) => ({ tag: typeof tag === 'string' ? tag : tag.tag || '' }))
+        : []
+      : []
+
     const response = await payload.create({
       collection: 'vocabulary',
       data: {
-        ...data,
         customer: userId,
+        word: data.word || '',
+        translation: data.translation || '',
+        definition: data.definition || '',
+        example: data.example || '',
+        pronunciation: data.pronunciation || '',
         status: data.status || 'new',
         difficulty: data.difficulty || 'medium',
         practiceCount: 0,
         accuracy: 0,
+        sourceLanguage: data.sourceLanguage || 'English',
+        targetLanguage: data.targetLanguage || 'Indonesian',
+        tags: formattedTags,
       },
     })
 
@@ -274,6 +290,7 @@ export async function updateVocabularyEntry(
       collection: 'vocabulary',
       id,
       data,
+      overrideAccess: true, // Bypass access control for updates
     })
 
     // Clear user cache to refresh data
@@ -296,6 +313,7 @@ export async function deleteVocabularyEntry(userId: string, id: string): Promise
     await payload.delete({
       collection: 'vocabulary',
       id,
+      overrideAccess: true, // Bypass access control for deletes
     })
 
     // Clear user cache to refresh data
@@ -360,6 +378,7 @@ export async function getWordsForPractice(
       where,
       limit: limit * 2, // Get more to allow for intelligent selection
       sort,
+      overrideAccess: true, // Bypass access control for practice words
     })
 
     let words = response.docs || []

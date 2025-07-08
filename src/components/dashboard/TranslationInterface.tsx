@@ -161,23 +161,25 @@ export function TranslationInterface() {
       return
     }
 
-    console.log(vocabularyItems)
+    console.log('Saving vocabulary items:', vocabularyItems)
 
     try {
       for (const item of vocabularyItems) {
         await createWord({
           word: item.word,
           translation: item.translation,
-          definition: item.context,
+          definition: item.context, // Map context to definition
           example: inputText, // Use original text as example
           difficulty: item.difficulty,
           status: 'new',
-          tags: [item.type, 'auto-extracted'],
+          tags: [item.type, 'auto-extracted'], // Will be formatted by API
           customer: customer.id,
         })
       }
+      toast.success(`Saved ${vocabularyItems.length} words to vocabulary!`)
     } catch (error) {
       console.error('Save vocabulary items error:', error)
+      toast.error('Failed to save vocabulary items')
       throw error
     }
   }
