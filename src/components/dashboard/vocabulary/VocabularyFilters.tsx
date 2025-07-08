@@ -241,7 +241,7 @@ export function VocabularyFilters({ filters, onFiltersChange }: VocabularyFilter
               <span>Active filters:</span>
               {filters.search && (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  Search: "{filters.search}"
+                  Search: &quot;{filters.search}&quot;
                   <X
                     className="h-3 w-3 cursor-pointer"
                     onClick={() => onFiltersChange({ search: '' })}

@@ -12,12 +12,7 @@ interface AuthGuardProps {
   fallback?: React.ReactNode
 }
 
-export function AuthGuard({ 
-  children, 
-  requireAuth = false, 
-  redirectTo,
-  fallback 
-}: AuthGuardProps) {
+export function AuthGuard({ children, requireAuth = false, redirectTo, fallback }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
@@ -81,9 +76,12 @@ export function AuthGuard({
 }
 
 // Convenience components for common use cases
-export function ProtectedRoute({ children, fallback }: { 
+export function ProtectedRoute({
+  children,
+  fallback,
+}: {
   children: React.ReactNode
-  fallback?: React.ReactNode 
+  fallback?: React.ReactNode
 }) {
   return (
     <AuthGuard requireAuth={true} fallback={fallback}>
@@ -92,9 +90,12 @@ export function ProtectedRoute({ children, fallback }: {
   )
 }
 
-export function GuestOnlyRoute({ children, fallback }: { 
+export function GuestOnlyRoute({
+  children,
+  fallback,
+}: {
   children: React.ReactNode
-  fallback?: React.ReactNode 
+  fallback?: React.ReactNode
 }) {
   return (
     <AuthGuard requireAuth={false} fallback={fallback}>
@@ -119,7 +120,7 @@ export function AuthLoadingFallback() {
             Authenticating...
           </h3>
           <p className="text-gray-600 dark:text-gray-400 max-w-sm">
-            We're verifying your credentials and setting up your session
+            We&apos;re verifying your credentials and setting up your session
           </p>
         </div>
         <div className="flex justify-center space-x-1">

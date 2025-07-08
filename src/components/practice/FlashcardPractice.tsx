@@ -4,17 +4,17 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  RotateCcw, 
-  Volume2, 
-  CheckCircle, 
-  XCircle, 
+import {
+  RotateCcw,
+  Volume2,
+  CheckCircle,
+  XCircle,
   Eye,
   EyeOff,
   ArrowRight,
   ArrowLeft,
   Pause,
-  Play
+  Play,
 } from 'lucide-react'
 import { PracticeSession, PracticeWord } from '@/hooks/usePracticeSession'
 
@@ -26,12 +26,12 @@ interface FlashcardPracticeProps {
   onResume: () => void
 }
 
-export function FlashcardPractice({ 
-  session, 
-  onAnswer, 
-  onComplete, 
-  onPause, 
-  onResume 
+export function FlashcardPractice({
+  session,
+  onAnswer,
+  onComplete,
+  onPause,
+  onResume,
 }: FlashcardPracticeProps) {
   const [isFlipped, setIsFlipped] = useState(false)
   const [showAnswer, setShowAnswer] = useState(false)
@@ -65,7 +65,7 @@ export function FlashcardPractice({
     const isComplete = onAnswer(
       isCorrect ? currentWord.correctAnswer : 'incorrect',
       isCorrect,
-      timeSpent
+      timeSpent,
     )
 
     if (isComplete) {
@@ -74,7 +74,9 @@ export function FlashcardPractice({
         totalWords: session.totalWords,
         correctWords: session.correctAnswers + (isCorrect ? 1 : 0),
         timeSpent: session.timeSpent,
-        accuracy: Math.round(((session.correctAnswers + (isCorrect ? 1 : 0)) / session.totalWords) * 100)
+        accuracy: Math.round(
+          ((session.correctAnswers + (isCorrect ? 1 : 0)) / session.totalWords) * 100,
+        ),
       }
       onComplete(results)
     } else {
@@ -117,11 +119,7 @@ export function FlashcardPractice({
       {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={session.isPaused ? onResume : onPause}
-          >
+          <Button variant="outline" size="sm" onClick={session.isPaused ? onResume : onPause}>
             {session.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
             {session.isPaused ? 'Resume' : 'Pause'}
           </Button>
@@ -142,7 +140,7 @@ export function FlashcardPractice({
 
       {/* Flashcard */}
       <div className="relative">
-        <Card 
+        <Card
           className={`
             min-h-[400px] cursor-pointer transition-all duration-300 border-0 shadow-lg
             ${isFlipped ? 'bg-primary-50 border-primary-200' : 'bg-white'}
@@ -205,7 +203,9 @@ export function FlashcardPractice({
                   {session.metadata?.includeExamples && currentWord.vocabulary.example && (
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-neutral-600">Example:</h4>
-                      <p className="text-neutral-700 italic">"{currentWord.vocabulary.example}"</p>
+                      <p className="text-neutral-700 italic">
+                        &quot;{currentWord.vocabulary.example}&quot;
+                      </p>
                     </div>
                   )}
                 </div>
@@ -231,7 +231,11 @@ export function FlashcardPractice({
         {/* Flip indicator */}
         <div className="absolute top-4 right-4">
           <div className="p-2 bg-white rounded-full shadow-sm">
-            {isFlipped ? <EyeOff className="h-4 w-4 text-neutral-500" /> : <Eye className="h-4 w-4 text-neutral-500" />}
+            {isFlipped ? (
+              <EyeOff className="h-4 w-4 text-neutral-500" />
+            ) : (
+              <Eye className="h-4 w-4 text-neutral-500" />
+            )}
           </div>
         </div>
       </div>
@@ -246,15 +250,14 @@ export function FlashcardPractice({
             className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
           >
             <XCircle className="h-5 w-5" />
-            Don't Know
+            Don&apos;t Know
           </Button>
           <Button
             size="lg"
             onClick={() => handleAnswer(true)}
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
           >
-            <CheckCircle className="h-5 w-5" />
-            I Know This
+            <CheckCircle className="h-5 w-5" />I Know This
           </Button>
         </div>
       )}
@@ -262,11 +265,13 @@ export function FlashcardPractice({
       {/* Feedback */}
       {hasAnswered && (
         <div className="text-center">
-          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
-            session.words[session.currentIndex]?.isCorrect 
-              ? 'bg-green-100 text-green-700' 
-              : 'bg-red-100 text-red-700'
-          }`}>
+          <div
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+              session.words[session.currentIndex]?.isCorrect
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700'
+            }`}
+          >
             {session.words[session.currentIndex]?.isCorrect ? (
               <>
                 <CheckCircle className="h-4 w-4" />

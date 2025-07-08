@@ -5,16 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Volume2, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Volume2,
+  CheckCircle,
+  XCircle,
   Clock,
   Pause,
   Play,
   ArrowRight,
   Lightbulb,
-  Eye
+  Eye,
 } from 'lucide-react'
 import { PracticeSession } from '@/hooks/usePracticeSession'
 
@@ -26,12 +26,12 @@ interface FillBlanksPracticeProps {
   onResume: () => void
 }
 
-export function FillBlanksPractice({ 
-  session, 
-  onAnswer, 
-  onComplete, 
-  onPause, 
-  onResume 
+export function FillBlanksPractice({
+  session,
+  onAnswer,
+  onComplete,
+  onPause,
+  onResume,
 }: FillBlanksPracticeProps) {
   const [userAnswer, setUserAnswer] = useState('')
   const [showResult, setShowResult] = useState(false)
@@ -47,8 +47,8 @@ export function FillBlanksPractice({
     if (!currentWord) return
 
     // Use the example sentence if available, otherwise create a simple one
-    let baseSentence = currentWord.vocabulary.example || 
-      `The word "${currentWord.vocabulary.word}" means _____.`
+    let baseSentence =
+      currentWord.vocabulary.example || `The word "${currentWord.vocabulary.word}" means _____.`
 
     // Replace the word with blank if it appears in the example
     if (currentWord.vocabulary.example) {
@@ -93,7 +93,7 @@ export function FillBlanksPractice({
     const trimmedAnswer = userAnswer.trim().toLowerCase()
     const correctAnswer = currentWord.vocabulary.word.toLowerCase()
     const correctTranslation = currentWord.vocabulary.translation.toLowerCase()
-    
+
     // Accept both the original word and its translation
     const isCorrect = trimmedAnswer === correctAnswer || trimmedAnswer === correctTranslation
 
@@ -108,7 +108,9 @@ export function FillBlanksPractice({
         totalWords: session.totalWords,
         correctWords: session.correctAnswers + (isCorrect ? 1 : 0),
         timeSpent: session.timeSpent,
-        accuracy: Math.round(((session.correctAnswers + (isCorrect ? 1 : 0)) / session.totalWords) * 100)
+        accuracy: Math.round(
+          ((session.correctAnswers + (isCorrect ? 1 : 0)) / session.totalWords) * 100,
+        ),
       }
       setTimeout(() => onComplete(results), 3000)
     } else {
@@ -159,11 +161,7 @@ export function FillBlanksPractice({
       {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={session.isPaused ? onResume : onPause}
-          >
+          <Button variant="outline" size="sm" onClick={session.isPaused ? onResume : onPause}>
             {session.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
             {session.isPaused ? 'Resume' : 'Pause'}
           </Button>
@@ -214,9 +212,13 @@ export function FillBlanksPractice({
                   {index < array.length - 1 && (
                     <span className="inline-block mx-2">
                       {showResult ? (
-                        <span className={`px-3 py-1 rounded font-medium ${
-                          isCorrectAnswer() ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}>
+                        <span
+                          className={`px-3 py-1 rounded font-medium ${
+                            isCorrectAnswer()
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
                           {userAnswer || '(empty)'}
                         </span>
                       ) : (
@@ -233,7 +235,9 @@ export function FillBlanksPractice({
 
           {/* Translation hint */}
           <div className="text-center text-sm text-neutral-600">
-            <p>Translation: <strong>{currentWord.vocabulary.translation}</strong></p>
+            <p>
+              Translation: <strong>{currentWord.vocabulary.translation}</strong>
+            </p>
           </div>
 
           {/* Hint */}
@@ -283,11 +287,11 @@ export function FillBlanksPractice({
           {/* Result Feedback */}
           {showResult && (
             <div className="text-center space-y-4">
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
-                isCorrectAnswer()
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-red-100 text-red-700'
-              }`}>
+              <div
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+                  isCorrectAnswer() ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                }`}
+              >
                 {isCorrectAnswer() ? (
                   <>
                     <CheckCircle className="h-4 w-4" />
@@ -296,8 +300,8 @@ export function FillBlanksPractice({
                 ) : (
                   <>
                     <XCircle className="h-4 w-4" />
-                    {userAnswer.trim() ? 'Incorrect. ' : 'Time\'s up! '}
-                    The correct answer is "{currentWord.vocabulary.word}"
+                    {userAnswer.trim() ? 'Incorrect. ' : 'Time&apos;s up! '}
+                    The correct answer is &quot;{currentWord.vocabulary.word}&quot;
                   </>
                 )}
               </div>
@@ -308,9 +312,7 @@ export function FillBlanksPractice({
                   <Eye className="h-4 w-4 inline mr-1" />
                   Complete sentence:
                 </p>
-                <p className="text-lg">
-                  {sentence.replace('_____', currentWord.vocabulary.word)}
-                </p>
+                <p className="text-lg">{sentence.replace('_____', currentWord.vocabulary.word)}</p>
               </div>
 
               {/* Additional Info */}

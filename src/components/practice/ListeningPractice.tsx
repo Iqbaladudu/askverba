@@ -5,17 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Volume2, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Volume2,
+  CheckCircle,
+  XCircle,
   Clock,
   Pause,
   Play,
   ArrowRight,
   VolumeX,
   RotateCcw,
-  Eye
+  Eye,
 } from 'lucide-react'
 import { PracticeSession } from '@/hooks/usePracticeSession'
 
@@ -27,12 +27,12 @@ interface ListeningPracticeProps {
   onResume: () => void
 }
 
-export function ListeningPractice({ 
-  session, 
-  onAnswer, 
-  onComplete, 
-  onPause, 
-  onResume 
+export function ListeningPractice({
+  session,
+  onAnswer,
+  onComplete,
+  onPause,
+  onResume,
 }: ListeningPracticeProps) {
   const [userAnswer, setUserAnswer] = useState('')
   const [showResult, setShowResult] = useState(false)
@@ -94,11 +94,11 @@ export function ListeningPractice({
       const utterance = new SpeechSynthesisUtterance(currentWord.vocabulary.word)
       utterance.lang = 'en-US'
       utterance.rate = 0.8 // Slightly slower for better comprehension
-      
+
       utterance.onend = () => {
         setIsPlaying(false)
         setHasPlayedAudio(true)
-        setPlayCount(prev => prev + 1)
+        setPlayCount((prev) => prev + 1)
       }
 
       utterance.onerror = () => {
@@ -115,7 +115,7 @@ export function ListeningPractice({
     const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000)
     const trimmedAnswer = userAnswer.trim().toLowerCase()
     const correctTranslation = currentWord.vocabulary.translation.toLowerCase()
-    
+
     // Check if the answer is correct (accept the translation)
     const isCorrect = trimmedAnswer === correctTranslation
 
@@ -130,7 +130,9 @@ export function ListeningPractice({
         totalWords: session.totalWords,
         correctWords: session.correctAnswers + (isCorrect ? 1 : 0),
         timeSpent: session.timeSpent,
-        accuracy: Math.round(((session.correctAnswers + (isCorrect ? 1 : 0)) / session.totalWords) * 100)
+        accuracy: Math.round(
+          ((session.correctAnswers + (isCorrect ? 1 : 0)) / session.totalWords) * 100,
+        ),
       }
       setTimeout(() => onComplete(results), 3000)
     } else {
@@ -166,11 +168,7 @@ export function ListeningPractice({
       {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={session.isPaused ? onResume : onPause}
-          >
+          <Button variant="outline" size="sm" onClick={session.isPaused ? onResume : onPause}>
             {session.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
             {session.isPaused ? 'Resume' : 'Pause'}
           </Button>
@@ -215,10 +213,12 @@ export function ListeningPractice({
           {/* Audio Player */}
           <div className="text-center space-y-4">
             <div className="flex justify-center">
-              <div className={`
+              <div
+                className={`
                 w-32 h-32 rounded-full border-4 flex items-center justify-center transition-all duration-300
                 ${isPlaying ? 'border-primary-500 bg-primary-50 animate-pulse' : 'border-neutral-300 bg-neutral-50'}
-              `}>
+              `}
+              >
                 {isPlaying ? (
                   <VolumeX className="h-12 w-12 text-primary-600" />
                 ) : (
@@ -232,7 +232,7 @@ export function ListeningPractice({
                 onClick={playAudio}
                 disabled={isPlaying || playCount >= maxPlays}
                 size="lg"
-                variant={hasPlayedAudio ? "outline" : "default"}
+                variant={hasPlayedAudio ? 'outline' : 'default'}
               >
                 {isPlaying ? (
                   <>
@@ -249,7 +249,9 @@ export function ListeningPractice({
 
               <div className="text-xs text-neutral-500">
                 {playCount > 0 && (
-                  <span>Played {playCount}/{maxPlays} times</span>
+                  <span>
+                    Played {playCount}/{maxPlays} times
+                  </span>
                 )}
               </div>
             </div>
@@ -258,9 +260,7 @@ export function ListeningPractice({
           {/* Show word if requested */}
           {showWord && !showResult && (
             <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-2xl font-bold text-blue-700">
-                {currentWord.vocabulary.word}
-              </div>
+              <div className="text-2xl font-bold text-blue-700">{currentWord.vocabulary.word}</div>
               {currentWord.vocabulary.pronunciation && (
                 <div className="text-sm text-blue-600 mt-1">
                   /{currentWord.vocabulary.pronunciation}/
@@ -302,11 +302,11 @@ export function ListeningPractice({
           {/* Result Feedback */}
           {showResult && (
             <div className="text-center space-y-4">
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
-                isCorrectAnswer()
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-red-100 text-red-700'
-              }`}>
+              <div
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+                  isCorrectAnswer() ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                }`}
+              >
                 {isCorrectAnswer() ? (
                   <>
                     <CheckCircle className="h-4 w-4" />
@@ -315,8 +315,8 @@ export function ListeningPractice({
                 ) : (
                   <>
                     <XCircle className="h-4 w-4" />
-                    {userAnswer.trim() ? 'Incorrect. ' : 'Time\'s up! '}
-                    The correct translation is "{currentWord.vocabulary.translation}"
+                    {userAnswer.trim() ? 'Incorrect. ' : 'Time&apos;s up! '}
+                    The correct translation is &quot;{currentWord.vocabulary.translation}&quot;
                   </>
                 )}
               </div>
@@ -349,7 +349,7 @@ export function ListeningPractice({
                 {session.metadata?.includeExamples && currentWord.vocabulary.example && (
                   <div className="p-3 bg-green-50 rounded-lg">
                     <p className="text-sm text-green-700">
-                      <strong>Example:</strong> "{currentWord.vocabulary.example}"
+                      <strong>Example:</strong> &quot;{currentWord.vocabulary.example}&quot;
                     </p>
                   </div>
                 )}

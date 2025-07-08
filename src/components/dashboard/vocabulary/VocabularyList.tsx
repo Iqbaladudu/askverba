@@ -275,7 +275,8 @@ export function VocabularyList({ filters, onFiltersChange }: VocabularyListProps
                     <span className="font-medium">Definition:</span> {item.definition}
                   </p>
                   <p className="text-sm text-neutral-600 italic">
-                    <span className="font-medium not-italic">Example:</span> "{item.example}"
+                    <span className="font-medium not-italic">Example:</span> &quot;{item.example}
+                    &quot;
                   </p>
                 </div>
 

@@ -42,7 +42,6 @@ export default buildConfig({
     PracticeSessions,
   ],
   editor: lexicalEditor(),
-  csrf: ['localhost:3000'],
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
