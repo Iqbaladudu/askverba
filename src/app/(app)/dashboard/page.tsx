@@ -36,9 +36,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Debug Section - Remove in production */}
-      <ApiTest />
+      {/* <ApiTest />
       <TranslationDebug />
-      <VocabularyTest />
+      <VocabularyTest /> */}
     </div>
   )
 }

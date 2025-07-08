@@ -56,7 +56,7 @@ export function useUserProgress() {
 }
 
 // Vocabulary Hook
-export function useVocabulary(options: any = {}) {
+export function useVocabulary() {
   const { customer } = useAuth()
   const [vocabulary, setVocabulary] = useState<any[]>([])
   const [stats, setStats] = useState<any>(null)
@@ -64,57 +64,52 @@ export function useVocabulary(options: any = {}) {
   const [error, setError] = useState<string | null>(null)
   const [pagination, setPagination] = useState<any>(null)
 
-  const fetchVocabulary = useCallback(async () => {
-    if (!customer?.id) {
-      console.log('useVocabulary: No customer ID available')
-      return
-    }
+  // Create a simple refetch function for CRUD operations
+  const refetchVocabulary = useCallback(async () => {
+    if (!customer?.id) return
+
+    console.log('🔄 Manual refetch triggered')
 
     try {
       setLoading(true)
-      console.log(
-        'useVocabulary: Fetching vocabulary for customer:',
-        customer.id,
-        'with options:',
-        options,
-      )
+      setError(null)
 
-      // Use the new vocabulary service with caching
+      // Fetch fresh data immediately
       const { getUserVocabulary, getVocabularyStats } = await import(
         '@/lib/services/vocabularyService'
       )
 
       const [vocabResponse, statsData] = await Promise.all([
-        getUserVocabulary(customer.id, options),
+        getUserVocabulary(customer.id),
         getVocabularyStats(customer.id),
       ])
 
-      console.log('useVocabulary: Received vocabulary response:', {
-        docsCount: vocabResponse.docs?.length || 0,
-        totalDocs: vocabResponse.totalDocs,
-        fromCache: vocabResponse.fromCache,
-        docs: vocabResponse.docs,
+      console.log('🔄 Refetch results:', {
+        vocabDocsLength: vocabResponse?.docs?.length || 0,
+        vocabResponse,
+        statsData,
       })
 
-      setVocabulary(vocabResponse.docs || [])
-      setStats(statsData)
+      // Update state with fresh data
+      setVocabulary(vocabResponse?.docs || [])
+      setStats(statsData || null)
       setPagination({
-        totalDocs: vocabResponse.totalDocs,
-        limit: vocabResponse.limit,
-        page: vocabResponse.page,
-        totalPages: vocabResponse.totalPages,
-        hasNextPage: vocabResponse.hasNextPage,
-        hasPrevPage: vocabResponse.hasPrevPage,
-        fromCache: vocabResponse.fromCache,
+        totalDocs: vocabResponse?.totalDocs || 0,
+        limit: vocabResponse?.limit || 20,
+        page: vocabResponse?.page || 1,
+        totalPages: vocabResponse?.totalPages || 0,
+        hasNextPage: vocabResponse?.hasNextPage || false,
+        hasPrevPage: vocabResponse?.hasPrevPage || false,
+        fromCache: false, // No cache implementation
       })
       setError(null)
     } catch (err) {
-      console.error('Vocabulary fetch error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch vocabulary')
+      console.error('❌ Refetch error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to refetch vocabulary')
     } finally {
       setLoading(false)
     }
-  }, [customer?.id, JSON.stringify(options)])
+  }, [customer?.id])
 
   const addWord = useCallback(
     async (data: any) => {
@@ -123,31 +118,30 @@ export function useVocabulary(options: any = {}) {
       try {
         const { createVocabularyEntry } = await import('@/lib/services/vocabularyService')
         const response = await createVocabularyEntry(customer.id, data)
-        await fetchVocabulary() // Refresh data
+        refetchVocabulary() // Refresh data
         return response
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to add word')
         throw err
       }
     },
-    [customer?.id, fetchVocabulary],
+    [customer?.id, refetchVocabulary],
   )
 
   const updateWord = useCallback(
     async (id: string, data: any) => {
       if (!customer?.id) return
-
       try {
         const { updateVocabularyEntry } = await import('@/lib/services/vocabularyService')
         const response = await updateVocabularyEntry(customer.id, id, data)
-        await fetchVocabulary() // Refresh data
+        refetchVocabulary() // Refresh data
         return response
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to update word')
         throw err
       }
     },
-    [customer?.id, fetchVocabulary],
+    [customer?.id, refetchVocabulary],
   )
 
   const deleteWord = useCallback(
@@ -157,18 +151,85 @@ export function useVocabulary(options: any = {}) {
       try {
         const { deleteVocabularyEntry } = await import('@/lib/services/vocabularyService')
         await deleteVocabularyEntry(customer.id, id)
-        await fetchVocabulary() // Refresh data
+        refetchVocabulary() // Refresh data
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to delete word')
         throw err
       }
     },
-    [customer?.id, fetchVocabulary],
+    [customer?.id, refetchVocabulary],
   )
 
+  // Simplified effect that focuses on the core issue
   useEffect(() => {
-    fetchVocabulary()
-  }, [fetchVocabulary])
+    let isMounted = true
+
+    const fetchData = async () => {
+      if (!customer?.id) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        // Import services
+        const { getUserVocabulary, getVocabularyStats } = await import(
+          '@/lib/services/vocabularyService'
+        )
+
+        // Fetch data
+        const [vocabResponse, statsData] = await Promise.all([
+          getUserVocabulary(customer.id),
+          getVocabularyStats(customer.id),
+        ])
+
+        // Only update state if component is still mounted
+        if (isMounted) {
+          console.log('✅ Setting vocabulary state:', vocabResponse?.docs?.length || 0, 'items')
+
+          setVocabulary(vocabResponse?.docs || [])
+          setStats(statsData || null)
+          setPagination({
+            totalDocs: vocabResponse?.totalDocs || 0,
+            limit: vocabResponse?.limit || 20,
+            page: vocabResponse?.page || 1,
+            totalPages: vocabResponse?.totalPages || 0,
+            hasNextPage: vocabResponse?.hasNextPage || false,
+            hasPrevPage: vocabResponse?.hasPrevPage || false,
+            fromCache: false, // No cache implementation
+          })
+
+          // Log final state
+          console.log('📊 Final vocabulary state set:', {
+            vocabularyLength: vocabResponse?.docs?.length || 0,
+            vocabulary: vocabResponse?.docs,
+          })
+        }
+      } catch (err) {
+        console.error('❌ Fetch error:', err)
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : 'Failed to fetch vocabulary')
+          setVocabulary([])
+          setStats(null)
+          setPagination(null)
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    // Debounce the fetch
+    const timeoutId = setTimeout(fetchData, 300)
+
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
+    }
+  }, [customer?.id]) // Remove options from dependency to prevent infinite re-renders
 
   return {
     vocabulary,
@@ -181,7 +242,7 @@ export function useVocabulary(options: any = {}) {
     createWord: addWord, // Alias for consistency
     updateWord,
     deleteWord,
-    refetch: fetchVocabulary,
+    refetch: refetchVocabulary,
   }
 }
 

@@ -74,15 +74,27 @@ export async function GET(request: NextRequest) {
 
     // Parse and validate query parameters
     const { searchParams } = new URL(request.url)
+
+    // Handle different sort parameter formats
+    let sortBy = searchParams.get('sortBy')
+    let sortOrder = searchParams.get('sortOrder') || 'desc'
+
+    // Handle Payload CMS style sort parameter (e.g., "sort=lastPracticed,accuracy")
+    const sortParam = searchParams.get('sort')
+    if (sortParam && !sortBy) {
+      const sortFields = sortParam.split(',')
+      sortBy = sortFields[0] // Use first field as primary sort
+    }
+
     const queryParams = {
       customerId: customer.id,
-      page: searchParams.get('page'),
-      limit: searchParams.get('limit'),
+      page: searchParams.get('page') || '1',
+      limit: searchParams.get('limit') || '20',
       status: searchParams.get('status'),
       difficulty: searchParams.get('difficulty'),
       search: searchParams.get('search'),
-      sortBy: searchParams.get('sortBy'),
-      sortOrder: searchParams.get('sortOrder'),
+      sortBy,
+      sortOrder,
     }
 
     const validatedQuery = validateRequest(VocabularyQuerySchema, queryParams)

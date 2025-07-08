@@ -2,11 +2,10 @@
 
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { TranslationCache } from '@/lib/redis'
 import { PracticeSessions, Vocabulary } from '@/payload-types'
 
 export interface PracticeSessionData {
-  sessionType: 'flashcard' | 'multiple_choice' | 'typing' | 'listening'
+  sessionType: 'flashcard' | 'multiple_choice' | 'fill_blanks' | 'listening' | 'mixed'
   words: Array<{
     vocabularyId: string
     isCorrect: boolean
@@ -137,27 +136,10 @@ async function updateVocabularyStats(
 }
 
 /**
- * Get practice statistics with caching
+ * Get practice statistics
  */
 export async function getPracticeStats(userId: string): Promise<PracticeStats> {
   try {
-    // Check cache first using the correct method
-    const redis = (await import('@/lib/redis')).default
-    const cacheKey = `user:${userId}:practice:stats`
-
-    let cached: string | null = null
-    if (redis) {
-      try {
-        cached = await redis.get(cacheKey)
-      } catch (error) {
-        console.warn('Redis cache read failed:', error)
-      }
-    }
-
-    if (cached) {
-      return JSON.parse(cached)
-    }
-
     const payload = await getPayload({ config })
 
     // Get all practice sessions for the user
@@ -188,20 +170,14 @@ export async function getPracticeStats(userId: string): Promise<PracticeStats> {
       sessionsByType: {
         flashcard: sessions.filter((s) => s.sessionType === 'flashcard').length,
         multiple_choice: sessions.filter((s) => s.sessionType === 'multiple_choice').length,
-        typing: sessions.filter((s) => s.sessionType === 'typing').length,
+        fill_blanks: sessions.filter((s) => s.sessionType === 'fill_blanks').length,
         listening: sessions.filter((s) => s.sessionType === 'listening').length,
+        mixed: sessions.filter((s) => s.sessionType === 'mixed').length,
       },
       recentSessions: sessions.slice(0, 10),
     }
 
-    // Cache the stats for 1 hour
-    if (redis) {
-      try {
-        await redis.setex(cacheKey, 3600, JSON.stringify(stats))
-      } catch (error) {
-        console.warn('Redis cache write failed:', error)
-      }
-    }
+    // Return stats directly
 
     return stats
   } catch (error) {

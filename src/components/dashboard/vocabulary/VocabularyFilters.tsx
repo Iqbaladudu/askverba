@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Search, Filter, SortAsc, X, Calendar, Star, BookOpen } from 'lucide-react'
+import { Search, Filter, SortAsc, X, Star, BookOpen } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -23,7 +23,7 @@ interface VocabularyFiltersProps {
 
 export function VocabularyFilters({ filters, onFiltersChange }: VocabularyFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const { stats } = useVocabulary({ limit: 1 }) // Just get stats
+  const { stats } = useVocabulary() // Just get stats
 
   const filterTabs = [
     {

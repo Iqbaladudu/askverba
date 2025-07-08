@@ -1,7 +1,6 @@
 'use server'
 
 import { translateSimple, translateDetailed } from '@/lib/translate'
-import { TranslationCache } from '@/lib/redis'
 import { TranslationResult, SimpleTranslationResult } from '@/components/schema'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -21,7 +20,7 @@ export interface TranslationResponse {
 }
 
 /**
- * Main translation method with caching
+ * Main translation method
  */
 export async function translateWithCache({
   text,
@@ -32,32 +31,6 @@ export async function translateWithCache({
   const startTime = Date.now()
 
   try {
-    // 1. Check cache first
-    const cachedResult = await TranslationCache.getCachedTranslation(text, mode)
-
-    if (cachedResult) {
-      console.log('Translation served from cache')
-
-      // Still save to user history if requested
-      if (saveToHistory && userId) {
-        await saveTranslationToHistory({
-          originalText: text,
-          result: cachedResult,
-          mode,
-          userId,
-          fromCache: true,
-          processingTime: Date.now() - startTime,
-        })
-      }
-
-      return {
-        result: cachedResult,
-        fromCache: true,
-        processingTime: Date.now() - startTime,
-        cached: true,
-      }
-    }
-
     // 2. Perform translation
     console.log('Performing new translation')
     let result: SimpleTranslationResult | TranslationResult
@@ -70,10 +43,7 @@ export async function translateWithCache({
 
     const processingTime = Date.now() - startTime
 
-    // 3. Cache the result
-    await TranslationCache.cacheTranslation(text, mode, result)
-
-    // 4. Save to database history
+    // 3. Save to database history
     if (saveToHistory && userId) {
       await saveTranslationToHistory({
         originalText: text,
@@ -83,12 +53,6 @@ export async function translateWithCache({
         fromCache: false,
         processingTime,
       })
-
-      // Increment user translation count
-      await TranslationCache.incrementTranslationCount(userId)
-
-      // Clear user cache to refresh data
-      await TranslationCache.clearUserCache(userId)
     }
 
     return {
@@ -160,11 +124,7 @@ async function saveTranslationToHistory({
  */
 export async function getUserTranslationHistory(userId: string, options: any = {}): Promise<any> {
   try {
-    // Check cache first
-    const cached = await TranslationCache.getUserTranslations(userId)
-    if (cached && !options.forceRefresh) {
-      return { data: cached, fromCache: true }
-    }
+    // Fetch directly from database
 
     // Fetch from database using Payload API directly
     const payload = await getPayload({ config })
@@ -181,10 +141,7 @@ export async function getUserTranslationHistory(userId: string, options: any = {
       sort: '-createdAt',
     })
 
-    // Cache the result
-    if (response.docs) {
-      await TranslationCache.cacheUserTranslations(userId, response.docs)
-    }
+    // Return response directly
 
     return { data: response, fromCache: false }
   } catch (error) {
@@ -198,18 +155,13 @@ export async function getUserTranslationHistory(userId: string, options: any = {
  */
 export async function getPopularTranslations(): Promise<any> {
   try {
-    // Check cache first
-    const cached = await TranslationCache.getPopularTranslations()
-    if (cached) {
-      return { data: cached, fromCache: true }
-    }
+    // Fetch directly from database
 
     // This would require aggregation query to find most translated texts
     // For now, return empty array
     const popularTranslations: any[] = []
 
-    // Cache the result
-    await TranslationCache.cachePopularTranslations(popularTranslations)
+    // Return directly
 
     return { data: popularTranslations, fromCache: false }
   } catch (error) {
@@ -222,7 +174,8 @@ export async function getPopularTranslations(): Promise<any> {
  * Clear user cache (useful when user updates preferences)
  */
 export async function clearUserTranslationCache(userId: string): Promise<void> {
-  await TranslationCache.clearUserCache(userId)
+  // No cache to clear - direct database access
+  console.log('Cache cleared for user:', userId)
 }
 
 /**
@@ -230,7 +183,19 @@ export async function clearUserTranslationCache(userId: string): Promise<void> {
  */
 export async function getTranslationCount(userId: string): Promise<number> {
   try {
-    return await TranslationCache.incrementTranslationCount(userId)
+    const payload = await getPayload({ config })
+
+    const response = await payload.find({
+      collection: 'translation-history',
+      where: {
+        customer: {
+          equals: userId,
+        },
+      },
+      limit: 0, // Just get count
+    })
+
+    return response.totalDocs || 0
   } catch (error) {
     console.error('Failed to get translation count:', error)
     return 0

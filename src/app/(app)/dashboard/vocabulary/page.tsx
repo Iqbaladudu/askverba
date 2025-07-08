@@ -5,7 +5,6 @@ import { VocabularyHeader } from '@/components/dashboard/vocabulary/VocabularyHe
 import { VocabularyStats } from '@/components/dashboard/vocabulary/VocabularyStats'
 import { VocabularyList } from '@/components/dashboard/vocabulary/VocabularyList'
 import { VocabularyFilters } from '@/components/dashboard/vocabulary/VocabularyFilters'
-import { VocabularyDebug } from '@/components/debug/VocabularyDebug'
 
 export interface VocabularyFilters {
   search?: string
@@ -42,7 +41,7 @@ export default function VocabularyPage() {
   return (
     <div className="space-y-6">
       {/* Debug Component - Remove in production */}
-      <VocabularyDebug />
+      {/* <VocabularyDebug /> */}
 
       {/* Header */}
       <VocabularyHeader />
@@ -51,10 +50,10 @@ export default function VocabularyPage() {
       <VocabularyStats />
 
       {/* Filters and Search */}
-      <VocabularyFilters filters={filters} onFiltersChange={handleFiltersChange} />
+      {/* <VocabularyFilters filters={filters} onFiltersChange={handleFiltersChange} /> */}
 
       {/* Vocabulary List */}
-      <VocabularyList filters={filters} onFiltersChange={handleFiltersChange} />
+      <VocabularyList />
     </div>
   )
 }

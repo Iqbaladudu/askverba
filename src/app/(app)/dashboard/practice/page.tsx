@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { 
-  ArrowLeft, 
-  Play, 
-  Pause, 
-  RotateCcw, 
+import {
+  ArrowLeft,
+  Play,
+  Pause,
+  RotateCcw,
   Settings,
   BookOpen,
   MessageSquare,
@@ -19,7 +19,7 @@ import {
   Shuffle,
   Clock,
   Target,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react'
 import { FlashcardPractice } from '@/components/practice/FlashcardPractice'
 import { MultipleChoicePractice } from '@/components/practice/MultipleChoicePractice'
@@ -74,10 +74,10 @@ export default function PracticePage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const practiceType = (searchParams.get('type') as PracticeType) || 'flashcard'
-  
+
   const [sessionState, setSessionState] = useState<'setup' | 'practicing' | 'results'>('setup')
   const [sessionConfig, setSessionConfig] = useState<any>(null)
-  
+
   const {
     session,
     isLoading,
@@ -86,16 +86,22 @@ export default function PracticePage() {
     pauseSession,
     resumeSession,
     submitAnswer,
-    resetSession
+    resetSession,
   } = usePracticeSession()
 
   const config = practiceTypeConfig[practiceType]
   const IconComponent = config.icon
 
-  const handleStartPractice = (config: any) => {
+  const handleStartPractice = async (config: any) => {
     setSessionConfig(config)
-    startSession(practiceType, config)
-    setSessionState('practicing')
+
+    try {
+      await startSession(practiceType, config)
+      setSessionState('practicing')
+    } catch (error) {
+      console.error('Failed to start practice session:', error)
+      // Stay in setup state if session creation fails
+    }
   }
 
   const handleEndPractice = (results: any) => {
@@ -113,7 +119,9 @@ export default function PracticePage() {
   }
 
   const renderPracticeComponent = () => {
-    if (!session || sessionState !== 'practicing') return null
+    if (!session || sessionState !== 'practicing') {
+      return null
+    }
 
     const commonProps = {
       session,
@@ -155,15 +163,13 @@ export default function PracticePage() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Vocabulary
               </Button>
-              
+
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${config.bgColor}`}>
                   <IconComponent className={`h-5 w-5 ${config.color}`} />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold text-neutral-800">
-                    {config.name}
-                  </h1>
+                  <h1 className="text-xl font-semibold text-neutral-800">{config.name}</h1>
                   <p className="text-sm text-neutral-600">{config.description}</p>
                 </div>
               </div>
@@ -173,7 +179,8 @@ export default function PracticePage() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
                   <Clock className="h-4 w-4" />
-                  {Math.floor(session.timeSpent / 60)}:{(session.timeSpent % 60).toString().padStart(2, '0')}
+                  {Math.floor(session.timeSpent / 60)}:
+                  {(session.timeSpent % 60).toString().padStart(2, '0')}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
                   <Target className="h-4 w-4" />
@@ -189,10 +196,7 @@ export default function PracticePage() {
 
           {session && sessionState === 'practicing' && (
             <div className="mt-4">
-              <Progress 
-                value={(session.currentIndex / session.totalWords) * 100} 
-                className="h-2"
-              />
+              <Progress value={(session.currentIndex / session.totalWords) * 100} className="h-2" />
             </div>
           )}
         </div>

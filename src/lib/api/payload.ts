@@ -1,6 +1,6 @@
 import { getAuthTokenFromDocument, getAuthTokenHybrid } from '@/lib/auth-cookies'
 
-const PAYLOAD_API_URL = process.env.NEXT_PUBLIC_PAYLOAD_URL || 'http://localhost:3000'
+const PAYLOAD_API_URL = process.env.NEXT_PUBLIC_PAYLOAD_URL || 'http://localhost:3001'
 
 // Get token from server-side cookies via API route
 async function getTokenFromServer(): Promise<string | null> {
@@ -435,13 +435,13 @@ export const practiceAPI = {
     const { limit = 20, difficulty, status } = options
     let query = `where[customer][equals]=${customerId}&limit=${limit}`
 
-    if (difficulty) query += `&where[difficulty][equals]=${difficulty}`
-    if (status) query += `&where[status][equals]=${status}`
+    if (difficulty && difficulty !== 'all') query += `&where[difficulty][equals]=${difficulty}`
+    if (status && status !== 'all') query += `&where[status][equals]=${status}`
 
     // Sort by spaced repetition algorithm (least recently practiced first, then by accuracy)
     query += '&sort=lastPracticed,accuracy'
 
-    return vocabularyAPI.getByCustomer(customerId, { limit, difficulty, status })
+    return payloadAPI(`/vocabulary?${query}`)
   },
 }
 

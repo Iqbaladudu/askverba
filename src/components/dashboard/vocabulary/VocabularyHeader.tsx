@@ -8,15 +8,13 @@ import { PracticeQuickActions } from './PracticeQuickActions'
 import { useVocabulary } from '@/hooks/usePayloadData'
 
 export function VocabularyHeader() {
-  const { stats, loading } = useVocabulary({ limit: 1 }) // Just get stats
+  const { stats, loading } = useVocabulary() // Just get stats
   const handleExport = () => {
     // Export vocabulary to PDF/CSV
-    console.log('Exporting vocabulary...')
   }
 
   const handleImport = () => {
     // Import vocabulary from file
-    console.log('Importing vocabulary...')
   }
 
   return (

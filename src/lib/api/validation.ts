@@ -118,8 +118,10 @@ export const VocabularyUpdateSchema = VocabularyCreateSchema.partial().extend({
 
 export const VocabularyQuerySchema = z.object({
   customerId: z.string().min(1, 'Customer ID is required'),
-  ...PaginationSchema.shape,
-  ...SortSchema.shape,
+  page: z.coerce.number().min(1).default(1).optional(),
+  limit: z.coerce.number().min(1).max(100).default(20).optional(),
+  sortBy: z.string().optional(),
+  sortOrder: z.enum(['asc', 'desc']).default('desc').optional(),
   status: z.enum(['new', 'learning', 'mastered']).optional(),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
   search: z.string().optional(),
@@ -137,7 +139,7 @@ export const PracticeWordSchema = z.object({
 
 export const PracticeSessionCreateSchema = z.object({
   customer: z.string().min(1, 'Customer ID is required'),
-  sessionType: z.enum(['flashcard', 'multiple_choice', 'typing', 'listening']),
+  sessionType: z.enum(['flashcard', 'multiple_choice', 'fill_blanks', 'listening', 'mixed']),
   words: z.array(PracticeWordSchema).min(1, 'At least one word is required'),
   score: z.number().min(0).max(100, 'Score must be between 0 and 100'),
   timeSpent: z.number().min(0, 'Time spent must be positive'),
@@ -156,7 +158,9 @@ export const PracticeSessionQuerySchema = z.object({
   customerId: z.string().min(1, 'Customer ID is required'),
   ...PaginationSchema.shape,
   ...SortSchema.shape,
-  sessionType: z.enum(['flashcard', 'multiple_choice', 'typing', 'listening']).optional(),
+  sessionType: z
+    .enum(['flashcard', 'multiple_choice', 'fill_blanks', 'listening', 'mixed'])
+    .optional(),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),

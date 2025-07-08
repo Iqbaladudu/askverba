@@ -23,7 +23,7 @@ interface VocabularyFiltersProps {
 
 export function VocabularyFilters({ filters, onFiltersChange }: VocabularyFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const { stats } = useVocabulary({ limit: 1 }) // Just get stats
+  const { stats } = useVocabulary() // Just get stats
 
   const filterTabs = [
     {

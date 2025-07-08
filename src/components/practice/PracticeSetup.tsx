@@ -6,17 +6,23 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Play, 
-  Settings, 
-  BookOpen, 
-  Target, 
-  Clock, 
+import {
+  Play,
+  Settings,
+  BookOpen,
+  Target,
+  Clock,
   Shuffle,
   FileText,
-  MessageCircle
+  MessageCircle,
 } from 'lucide-react'
 import { useVocabulary } from '@/hooks/usePayloadData'
 
@@ -27,7 +33,7 @@ interface PracticeSetupProps {
 }
 
 export function PracticeSetup({ practiceType, onStart, isLoading }: PracticeSetupProps) {
-  const { stats } = useVocabulary()
+  const { stats, loading, error } = useVocabulary()
   const [config, setConfig] = useState({
     wordCount: 10,
     difficulty: 'all' as 'all' | 'easy' | 'medium' | 'hard',
@@ -39,9 +45,9 @@ export function PracticeSetup({ practiceType, onStart, isLoading }: PracticeSetu
   })
 
   const handleConfigChange = (key: string, value: any) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }))
   }
 
@@ -57,22 +63,89 @@ export function PracticeSetup({ practiceType, onStart, isLoading }: PracticeSetu
 
   const getAvailableWords = () => {
     if (!stats) return 0
-    
+
     let count = stats.totalWords || 0
-    
+
     if (config.difficulty !== 'all') {
       count = stats.byDifficulty?.[config.difficulty] || 0
     }
-    
+
     if (config.status !== 'all') {
       count = stats.byStatus?.[config.status] || 0
     }
-    
+
     return count
   }
 
   const availableWords = getAvailableWords()
   const maxWords = Math.min(availableWords, 50) // Cap at 50 words
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5 text-primary-600" />
+              Loading Practice Settings...
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-0 shadow-sm border-red-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-600">
+              <Settings className="h-5 w-5" />
+              Error Loading Practice Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-red-600">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show no vocabulary state
+  if (!loading && (!stats || !stats.totalWords || stats.totalWords === 0)) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-0 shadow-sm border-yellow-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-600">
+              <BookOpen className="h-5 w-5" />
+              No Vocabulary Available
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-yellow-700 mb-4">
+              You need to add some vocabulary words before you can start practicing.
+            </p>
+            <Button
+              onClick={() => (window.location.href = '/dashboard/vocabulary')}
+              className="bg-yellow-600 hover:bg-yellow-700"
+            >
+              Add Vocabulary Words
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -99,9 +172,7 @@ export function PracticeSetup({ practiceType, onStart, isLoading }: PracticeSetu
               step={5}
               className="w-full"
             />
-            <p className="text-xs text-neutral-500">
-              Available words: {availableWords}
-            </p>
+            <p className="text-xs text-neutral-500">Available words: {availableWords}</p>
           </div>
 
           {/* Difficulty Filter */}
@@ -163,7 +234,7 @@ export function PracticeSetup({ practiceType, onStart, isLoading }: PracticeSetu
           {/* Practice Options */}
           <div className="space-y-4">
             <Label className="text-sm font-medium">Practice Options</Label>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-neutral-500" />
@@ -216,11 +287,15 @@ export function PracticeSetup({ practiceType, onStart, isLoading }: PracticeSetu
                 <div className="text-xs text-neutral-500">Total Words</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{stats.byStatus?.mastered || 0}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {stats.byStatus?.mastered || 0}
+                </div>
                 <div className="text-xs text-neutral-500">Mastered</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600">{stats.byStatus?.learning || 0}</div>
+                <div className="text-2xl font-bold text-yellow-600">
+                  {stats.byStatus?.learning || 0}
+                </div>
                 <div className="text-xs text-neutral-500">Learning</div>
               </div>
               <div className="text-center">

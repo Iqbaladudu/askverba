@@ -3,7 +3,7 @@
 /* UX: Unified navbar for both landing page and dashboard with authentication state handling */
 /* DESIGN: Dashboard-style design that adapts based on authentication status */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -116,7 +116,7 @@ const Navbar: React.FC = () => {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-1">
-          {!isAuthenticated &&
+          {!isDashboard &&
             navItems.map((item) => (
               <Link
                 key={item.label}
@@ -126,7 +126,6 @@ const Navbar: React.FC = () => {
                 {item.label}
               </Link>
             ))}
-
           {/* Right Actions */}
           {!isLoading && (
             <div className="flex items-center gap-2">

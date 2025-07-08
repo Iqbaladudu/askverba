@@ -2,7 +2,6 @@
 
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { TranslationCache } from '@/lib/redis'
 import { Vocabulary } from '@/payload-types'
 
 export interface VocabularyOptions {
@@ -39,75 +38,8 @@ export interface VocabularyResponse {
 /**
  * Get user vocabulary with caching
  */
-export async function getUserVocabulary(
-  userId: string,
-  options: VocabularyOptions = {},
-): Promise<VocabularyResponse> {
+export async function getUserVocabulary(userId: string): Promise<VocabularyResponse> {
   try {
-    const {
-      limit = 50,
-      page = 1,
-      status,
-      difficulty,
-      search,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-    } = options
-
-    console.log('vocabularyService: getUserVocabulary called with:', { userId, options })
-
-    // Create cache key based on options
-    const cacheKey = `vocabulary:${userId}:${JSON.stringify(options)}`
-
-    // Temporarily bypass cache for debugging
-    console.log('vocabularyService: Bypassing cache for debugging')
-
-    // Check cache first (only for simple queries without search)
-    // if (!search) {
-    //   const cached = await TranslationCache.getUserVocabulary(userId)
-    //   if (cached && Array.isArray(cached)) {
-    //     console.log('vocabularyService: Found cached data:', cached.length, 'items')
-    //     // Apply filters to cached data
-    //     let filteredData = cached
-
-    //     if (status) {
-    //       filteredData = filteredData.filter((item: any) => item.status === status)
-    //     }
-
-    //     if (difficulty) {
-    //       filteredData = filteredData.filter((item: any) => item.difficulty === difficulty)
-    //     }
-
-    //     // Apply sorting
-    //     filteredData.sort((a: any, b: any) => {
-    //       const aValue = a[sortBy] || ''
-    //       const bValue = b[sortBy] || ''
-
-    //       if (sortOrder === 'asc') {
-    //         return aValue > bValue ? 1 : -1
-    //       } else {
-    //         return aValue < bValue ? 1 : -1
-    //       }
-    //     })
-
-    //     // Apply pagination
-    //     const startIndex = (page - 1) * limit
-    //     const endIndex = startIndex + limit
-    //     const paginatedData = filteredData.slice(startIndex, endIndex)
-
-    //     return {
-    //       docs: paginatedData,
-    //       totalDocs: filteredData.length,
-    //       limit,
-    //       page,
-    //       totalPages: Math.ceil(filteredData.length / limit),
-    //       hasNextPage: endIndex < filteredData.length,
-    //       hasPrevPage: page > 1,
-    //       fromCache: true,
-    //     }
-    //   }
-    // }
-
     // Fetch from database
     const payload = await getPayload({ config })
 
@@ -118,46 +50,11 @@ export async function getUserVocabulary(
       },
     }
 
-    if (status) {
-      where.status = { equals: status }
-    }
-
-    if (difficulty) {
-      where.difficulty = { equals: difficulty }
-    }
-
-    if (search) {
-      where.or = [
-        { word: { contains: search } },
-        { translation: { contains: search } },
-        { definition: { contains: search } },
-      ]
-    }
-
-    // Build sort
-    const sort = `${sortOrder === 'desc' ? '-' : ''}${sortBy}`
-
-    console.log('vocabularyService: Querying database with:', { where, limit, page, sort })
-
     const response = await payload.find({
       collection: 'vocabulary',
       where,
-      limit,
-      page,
-      sort,
-      overrideAccess: true, // Bypass access control for vocabulary fetching
+      pagination: true,
     })
-
-    console.log('vocabularyService: Database response:', {
-      docsCount: response.docs?.length || 0,
-      totalDocs: response.totalDocs,
-      docs: response.docs,
-    })
-
-    // Cache the result (only if no search to avoid cache pollution)
-    if (!search && response.docs) {
-      await TranslationCache.cacheUserVocabulary(userId, response.docs)
-    }
 
     return {
       docs: response.docs,
@@ -180,12 +77,6 @@ export async function getUserVocabulary(
  */
 export async function getVocabularyStats(userId: string): Promise<VocabularyStats> {
   try {
-    // Check cache first
-    const cached = await TranslationCache.getVocabularyStats(userId)
-    if (cached) {
-      return cached
-    }
-
     // Fetch from database
     const payload = await getPayload({ config })
 
@@ -212,15 +103,13 @@ export async function getVocabularyStats(userId: string): Promise<VocabularyStat
           ? Math.round(docs.reduce((sum, w) => sum + (w.accuracy || 0), 0) / docs.length)
           : 0,
       totalPracticeCount: docs.reduce((sum, w) => sum + (w.practiceCount || 0), 0),
-      lastPracticed: docs
-        .filter((w) => w.lastPracticed)
-        .sort(
-          (a, b) => new Date(b.lastPracticed!).getTime() - new Date(a.lastPracticed!).getTime(),
-        )[0]?.lastPracticed,
+      lastPracticed:
+        docs
+          .filter((w) => w.lastPracticed)
+          .sort(
+            (a, b) => new Date(b.lastPracticed!).getTime() - new Date(a.lastPracticed!).getTime(),
+          )[0]?.lastPracticed || undefined,
     }
-
-    // Cache the stats
-    await TranslationCache.cacheVocabularyStats(userId, stats)
 
     return stats
   } catch (error) {
@@ -265,8 +154,7 @@ export async function createVocabularyEntry(
       },
     })
 
-    // Clear user cache to refresh data
-    await TranslationCache.clearUserCache(userId)
+    // Data updated successfully
 
     return response
   } catch (error) {
@@ -293,8 +181,7 @@ export async function updateVocabularyEntry(
       overrideAccess: true, // Bypass access control for updates
     })
 
-    // Clear user cache to refresh data
-    await TranslationCache.clearUserCache(userId)
+    // Data updated successfully
 
     return response
   } catch (error) {
@@ -316,8 +203,7 @@ export async function deleteVocabularyEntry(userId: string, id: string): Promise
       overrideAccess: true, // Bypass access control for deletes
     })
 
-    // Clear user cache to refresh data
-    await TranslationCache.clearUserCache(userId)
+    // Data deleted successfully
   } catch (error) {
     console.error('Failed to delete vocabulary entry:', error)
     throw new Error('Failed to delete vocabulary entry')
@@ -339,11 +225,7 @@ export async function getWordsForPractice(
   try {
     const { limit = 20, difficulty, status, prioritizeWeak = true } = options
 
-    // Check cache first
-    const cached = await TranslationCache.getPracticeWords(userId, options)
-    if (cached) {
-      return cached
-    }
+    // Fetch words directly from database
 
     const payload = await getPayload({ config })
 
@@ -397,8 +279,7 @@ export async function getWordsForPractice(
       words = words.slice(0, limit)
     }
 
-    // Cache the result
-    await TranslationCache.cachePracticeWords(userId, options, words)
+    // Return words directly
 
     return words
   } catch (error) {

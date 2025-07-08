@@ -138,6 +138,7 @@ export function usePracticeSession() {
 
       setSession(newSession)
     } catch (err) {
+      console.error('Error starting practice session:', err)
       setError(err instanceof Error ? err.message : 'Failed to start practice session')
     } finally {
       setIsLoading(false)

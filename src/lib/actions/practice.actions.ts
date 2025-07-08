@@ -83,7 +83,7 @@ export async function getUserPracticeSessionsAction(
   options: {
     page?: number
     limit?: number
-    sessionType?: 'flashcard' | 'multiple_choice' | 'typing' | 'listening'
+    sessionType?: 'flashcard' | 'multiple_choice' | 'fill_blanks' | 'listening' | 'mixed'
     difficulty?: 'easy' | 'medium' | 'hard'
     dateFrom?: string
     dateTo?: string
@@ -233,7 +233,7 @@ export async function getPracticeSessionAction(sessionId: string): Promise<Pract
 export async function getPracticeAnalyticsAction(
   options: {
     period?: 'day' | 'week' | 'month' | 'year'
-    sessionType?: 'flashcard' | 'multiple_choice' | 'typing' | 'listening'
+    sessionType?: 'flashcard' | 'multiple_choice' | 'fill_blanks' | 'listening' | 'mixed'
     difficulty?: 'easy' | 'medium' | 'hard'
   } = {},
 ): Promise<PracticeActionResult> {

@@ -48,7 +48,7 @@ interface VocabularyListProps {
 }
 
 export function VocabularyList({ filters, onFiltersChange }: VocabularyListProps) {
-  const { vocabulary, loading, error, updateWord, deleteWord } = useVocabulary(filters)
+  const { vocabulary, loading, error, updateWord, deleteWord } = useVocabulary()
   const [practiceFilter, setPracticeFilter] = useState('all')
 
   if (loading) {
@@ -76,6 +76,7 @@ export function VocabularyList({ filters, onFiltersChange }: VocabularyListProps
   }
 
   if (!vocabulary || vocabulary.length === 0) {
+    console.log(vocabulary, 'Melisa')
     return (
       <Card className="border-0 shadow-sm">
         <CardContent className="p-6 text-center">

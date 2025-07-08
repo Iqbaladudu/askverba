@@ -19,7 +19,6 @@ import {
   filterVocabularyByPractice,
   sortVocabularyByPracticePriority,
 } from './PracticeFilter'
-import { VocabularyFilters as VocabularyFiltersType } from '@/app/(app)/dashboard/vocabulary/page'
 
 interface VocabularyItem {
   id: string
@@ -42,14 +41,11 @@ interface VocabularyItem {
     | null
 }
 
-interface VocabularyListProps {
-  filters: VocabularyFiltersType
-  onFiltersChange: (filters: Partial<VocabularyFiltersType>) => void
-}
-
-export function VocabularyList({ filters, onFiltersChange }: VocabularyListProps) {
-  const { vocabulary, loading, error, updateWord, deleteWord } = useVocabulary(filters)
+export function VocabularyList() {
+  const { vocabulary, loading, error, updateWord, deleteWord } = useVocabulary()
   const [practiceFilter, setPracticeFilter] = useState('all')
+
+  console.log(vocabulary)
 
   if (loading) {
     return (
@@ -209,7 +205,7 @@ export function VocabularyList({ filters, onFiltersChange }: VocabularyListProps
             <span className="ml-2 text-primary-600 font-medium">(filtered by practice status)</span>
           )}
         </div>
-        <PracticeFilter currentFilter={practiceFilter} onFilterChange={setPracticeFilter} />
+        {/* <PracticeFilter currentFilter={practiceFilter} onFilterChange={setPracticeFilter} /> */}
       </div>
 
       {vocabularyItems.map((item) => (

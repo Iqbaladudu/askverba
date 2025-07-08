@@ -188,40 +188,6 @@ export function DashboardSidebar({ className }: SidebarProps) {
             )
           })}
         </nav>
-
-        {/* Recent Vocabulary */}
-        <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-neutral-700">Recent Words</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-primary-500" />
-                <span className="ml-2 text-xs text-neutral-600">Loading...</span>
-              </div>
-            ) : recentWords.length === 0 ? (
-              <div className="text-center py-4">
-                <BookOpen className="h-8 w-8 text-neutral-400 mx-auto mb-2" />
-                <p className="text-xs text-neutral-500">No vocabulary yet</p>
-                <p className="text-xs text-neutral-400">Start learning!</p>
-              </div>
-            ) : (
-              recentWords.map((item, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-neutral-700">{item.word}</span>
-                  <span className="text-neutral-500">{item.translation}</span>
-                </div>
-              ))
-            )}
-            <Link
-              href="/dashboard/vocabulary"
-              className="block text-center text-xs text-primary-600 hover:text-primary-700 font-medium mt-3 pt-3 border-t border-neutral-100"
-            >
-              View All Words
-            </Link>
-          </CardContent>
-        </Card>
       </div>
     </aside>
   )
