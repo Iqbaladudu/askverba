@@ -1,5 +1,13 @@
 import { cookies } from 'next/headers'
 
+// Types
+interface Customer {
+  id: string
+  email: string
+  name: string
+  [key: string]: unknown
+}
+
 // Cookie configuration
 const COOKIE_CONFIG = {
   maxAge: 7 * 24 * 60 * 60, // 7 days (same as client-side)
@@ -23,7 +31,7 @@ export async function getAuthTokenFromCookies(): Promise<string | null> {
   }
 }
 
-export async function getCustomerFromCookies(): Promise<any | null> {
+export async function getCustomerFromCookies(): Promise<Customer | null> {
   try {
     const cookieStore = await cookies()
     const customerData = cookieStore.get(CUSTOMER_COOKIE)?.value
@@ -34,7 +42,7 @@ export async function getCustomerFromCookies(): Promise<any | null> {
   }
 }
 
-export async function setAuthCookies(token: string, customer: any): Promise<void> {
+export async function setAuthCookies(token: string, customer: Customer): Promise<void> {
   try {
     const cookieStore = await cookies()
 
@@ -55,3 +63,7 @@ export async function clearAuthCookies(): Promise<void> {
     console.error('Error clearing auth cookies:', error)
   }
 }
+
+// Aliases for server actions compatibility
+export const setAuthCookiesOnServer = setAuthCookies
+export const clearAuthCookiesOnServer = clearAuthCookies

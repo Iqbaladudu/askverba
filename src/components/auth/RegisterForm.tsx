@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/form'
 import { Eye, EyeOff } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
-import { registerCustomerAction } from 'action/register.action'
+import { registerAction } from '@/lib/actions/auth.actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -30,7 +30,11 @@ export const RegisterForm: React.FC = () => {
     mutationFn: async (data: RegisterSchema) => {
       // Extract only the fields needed for the action (exclude confirmPassword)
       const { name, email, password } = data
-      return await registerCustomerAction({ name, email, password })
+      const formData = new FormData()
+      formData.append('name', name)
+      formData.append('email', email)
+      formData.append('password', password)
+      return await registerAction(null, formData)
     },
     onSuccess: (result) => {
       if (result.success) {

@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/AuthContext'
-import { logoutCustomerAction } from 'action/logout.action'
+import { logoutAction } from '@/lib/actions/auth.actions'
 import { toast } from 'sonner'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -74,7 +74,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await logoutCustomerAction()
+      await logoutAction()
       logout()
       toast.success('Logged out successfully')
     } catch (error) {

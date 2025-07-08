@@ -1,104 +1,238 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { handleApiError, validateRequest, requireAuth } from '@/lib/api/error-handler'
+import {
+  VocabularyCreateSchema,
+  VocabularyQuerySchema,
+  VocabularyUpdateSchema,
+} from '@/lib/api/validation'
+import { getAuthTokenFromCookies, getCustomerFromCookies } from '@/lib/server-cookies'
 
+/**
+ * Create new vocabulary entry
+ */
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const {
-      customer,
-      word,
-      translation,
-      definition,
-      example,
-      difficulty = 'medium',
-      status = 'new',
-      tags = [],
-    } = body
+  const requestId = crypto.randomUUID()
 
-    if (!customer || !word || !translation) {
-      return NextResponse.json(
-        { error: 'Customer, word, and translation are required' },
-        { status: 400 },
-      )
+  try {
+    // Get authentication
+    const token = await getAuthTokenFromCookies()
+    const customer = await getCustomerFromCookies()
+
+    requireAuth(token)
+
+    if (!customer?.id) {
+      return NextResponse.json({ error: 'Customer information required' }, { status: 401 })
     }
+
+    // Parse and validate request body
+    const body = await request.json()
+    const validatedData = validateRequest(VocabularyCreateSchema, {
+      ...body,
+      customer: customer.id,
+    })
 
     const payload = await getPayload({ config })
 
-    // Format tags array to match collection schema
-    const formattedTags = Array.isArray(tags)
-      ? tags.map((tag) => ({ tag: typeof tag === 'string' ? tag : tag.tag || '' }))
-      : []
-
-    // Create vocabulary entry
+    // Create vocabulary entry with proper access control
     const vocabularyEntry = await payload.create({
       collection: 'vocabulary',
-      data: {
-        customer,
-        word,
-        translation,
-        definition: definition || '',
-        example: example || '',
-        difficulty,
-        status,
-        practiceCount: 0,
-        accuracy: 0,
-        tags: formattedTags,
-      },
-      overrideAccess: true, // Bypass access control for testing
+      data: validatedData,
+      user: customer, // Use proper user context instead of overrideAccess
     })
 
     return NextResponse.json({
       success: true,
       data: vocabularyEntry,
+      meta: {
+        requestId,
+        timestamp: new Date().toISOString(),
+      },
     })
   } catch (error) {
-    console.error('Create vocabulary error:', error)
-    return NextResponse.json(
-      {
-        error: 'Failed to create vocabulary entry',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 },
-    )
+    return handleApiError(error, request.url, requestId)
   }
 }
 
+/**
+ * Get user vocabulary with filtering and pagination
+ */
 export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const customerId = searchParams.get('customerId')
+  const requestId = crypto.randomUUID()
 
-    if (!customerId) {
-      return NextResponse.json({ error: 'Customer ID is required' }, { status: 400 })
+  try {
+    // Get authentication
+    const token = await getAuthTokenFromCookies()
+    const customer = await getCustomerFromCookies()
+
+    requireAuth(token)
+
+    if (!customer?.id) {
+      return NextResponse.json({ error: 'Customer information required' }, { status: 401 })
     }
+
+    // Parse and validate query parameters
+    const { searchParams } = new URL(request.url)
+    const queryParams = {
+      customerId: customer.id,
+      page: searchParams.get('page'),
+      limit: searchParams.get('limit'),
+      status: searchParams.get('status'),
+      difficulty: searchParams.get('difficulty'),
+      search: searchParams.get('search'),
+      sortBy: searchParams.get('sortBy'),
+      sortOrder: searchParams.get('sortOrder'),
+    }
+
+    const validatedQuery = validateRequest(VocabularyQuerySchema, queryParams)
 
     const payload = await getPayload({ config })
 
-    // Get vocabulary for this customer
+    // Build query conditions
+    const where: any = {
+      customer: {
+        equals: customer.id,
+      },
+    }
+
+    if ((validatedQuery as any).status) {
+      where.status = { equals: (validatedQuery as any).status }
+    }
+
+    if ((validatedQuery as any).difficulty) {
+      where.difficulty = { equals: (validatedQuery as any).difficulty }
+    }
+
+    if ((validatedQuery as any).search) {
+      where.or = [
+        { word: { contains: (validatedQuery as any).search } },
+        { translation: { contains: (validatedQuery as any).search } },
+        { definition: { contains: (validatedQuery as any).search } },
+      ]
+    }
+
+    // Get vocabulary with proper access control
     const vocabularyResult = await payload.find({
       collection: 'vocabulary',
-      where: {
-        customer: {
-          equals: customerId,
-        },
-      },
-      limit: 100,
-      overrideAccess: true,
+      where,
+      limit: (validatedQuery as any).limit || 20,
+      page: (validatedQuery as any).page || 1,
+      sort: `${(validatedQuery as any).sortOrder === 'asc' ? '' : '-'}${(validatedQuery as any).sortBy || 'createdAt'}`,
+      user: customer, // Use proper user context
     })
 
     return NextResponse.json({
       success: true,
       data: vocabularyResult,
+      meta: {
+        requestId,
+        timestamp: new Date().toISOString(),
+        query: validatedQuery,
+      },
     })
   } catch (error) {
-    console.error('Get vocabulary error:', error)
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch vocabulary',
-        details: error instanceof Error ? error.message : 'Unknown error',
+    return handleApiError(error, request.url, requestId)
+  }
+}
+
+/**
+ * Update vocabulary entry
+ */
+export async function PUT(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+
+  try {
+    // Get authentication
+    const token = await getAuthTokenFromCookies()
+    const customer = await getCustomerFromCookies()
+
+    requireAuth(token)
+
+    if (!customer?.id) {
+      return NextResponse.json({ error: 'Customer information required' }, { status: 401 })
+    }
+
+    // Parse and validate request body
+    const body = await request.json()
+    const { id, ...updateData } = body
+
+    if (!id) {
+      return NextResponse.json({ error: 'Vocabulary ID is required' }, { status: 400 })
+    }
+
+    const validatedData = validateRequest(VocabularyUpdateSchema, {
+      ...updateData,
+      id,
+      customer: customer.id,
+    })
+
+    const payload = await getPayload({ config })
+
+    // Update vocabulary entry with proper access control
+    const updatedEntry = await payload.update({
+      collection: 'vocabulary',
+      id,
+      data: validatedData,
+      user: customer,
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: updatedEntry,
+      meta: {
+        requestId,
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 },
-    )
+    })
+  } catch (error) {
+    return handleApiError(error, request.url, requestId)
+  }
+}
+
+/**
+ * Delete vocabulary entry
+ */
+export async function DELETE(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+
+  try {
+    // Get authentication
+    const token = await getAuthTokenFromCookies()
+    const customer = await getCustomerFromCookies()
+
+    requireAuth(token)
+
+    if (!customer?.id) {
+      return NextResponse.json({ error: 'Customer information required' }, { status: 401 })
+    }
+
+    // Get vocabulary ID from query params
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({ error: 'Vocabulary ID is required' }, { status: 400 })
+    }
+
+    const payload = await getPayload({ config })
+
+    // Delete vocabulary entry with proper access control
+    await payload.delete({
+      collection: 'vocabulary',
+      id,
+      user: customer,
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Vocabulary entry deleted successfully',
+      meta: {
+        requestId,
+        timestamp: new Date().toISOString(),
+      },
+    })
+  } catch (error) {
+    return handleApiError(error, request.url, requestId)
   }
 }

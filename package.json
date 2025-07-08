@@ -11,6 +11,8 @@
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "test:integration": "node scripts/test-integration.js",
+    "test:redis": "node scripts/test-redis.js",
+    "redis:setup": "./scripts/redis-setup.sh",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
@@ -40,6 +42,7 @@
     "@radix-ui/react-tooltip": "^1.2.0",
     "@tailwindcss/postcss": "^4.1.3",
     "@tanstack/react-query": "^5.81.5",
+    "@tanstack/react-query-devtools": "^5.81.5",
     "@types/ioredis": "^4.28.10",
     "ai": "^4.3.10",
     "class-variance-authority": "^0.7.1",

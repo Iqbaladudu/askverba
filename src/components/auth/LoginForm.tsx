@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/form'
 import { Eye, EyeOff } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
-import { loginCustomerAction } from 'action/login.action'
+import { loginAction } from '@/lib/actions/auth.actions'
 import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
@@ -30,7 +30,10 @@ export const LoginForm: React.FC = () => {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginSchema) => {
-      return await loginCustomerAction(data)
+      const formData = new FormData()
+      formData.append('email', data.email)
+      formData.append('password', data.password)
+      return await loginAction(null, formData)
     },
     onSuccess: (result) => {
       if (result.success && result.customer && result.token) {

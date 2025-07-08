@@ -3,12 +3,14 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
-import { translateSimpleAction } from 'action/translate-simple.action'
+import { translateSimpleAction } from '@/features/translation/actions/translate-simple.action'
 import { translateDetailed } from '@/lib/translate'
 import { TranslationResult, TranslationMode, IntegratedTranslatorProps } from '@/types/translator'
 import { SimpleTranslationResult } from '@/components/schema'
 import { TranslatorInput } from './translatorInput'
 import { TranslationOutput } from './translationOutput'
+import { GuestLimitationBanner } from './GuestLimitationBanner'
+import { useAuth } from '@/contexts/AuthContext'
 
 const defaultOnTranslate = async (text: string, mode: TranslationMode) => {
   if (mode === 'simple') {
@@ -23,12 +25,13 @@ const IntegratedTranslator: React.FC<IntegratedTranslatorProps> = ({
   onTranslate = defaultOnTranslate,
   maxInputLength = 500,
 }) => {
+  const { isAuthenticated } = useAuth()
   const [inputText, setInputText] = useState<string>('')
   const [translationResult, setTranslationResult] = useState<
     string | SimpleTranslationResult | TranslationResult | null
   >(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [autoTranslate, setAutoTranslate] = useState<boolean>(false)
+  const [autoTranslate] = useState<boolean>(false)
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null)
   const [translationMode, setTranslationMode] = useState<TranslationMode>('simple')
   const [expandedSections, setExpandedSections] = useState<string[]>([
@@ -36,28 +39,91 @@ const IntegratedTranslator: React.FC<IntegratedTranslatorProps> = ({
     'examples',
     'usage_tips',
   ])
-  const [translationCount, setTranslationCount] = useState<number>(0)
-  const [showSettings, setShowSettings] = useState<boolean>(false)
+  const [guestTranslationCount, setGuestTranslationCount] = useState<number>(0)
 
   const characterCount = inputText.length
 
+  // Load guest translation count from localStorage on mount
+  useEffect(() => {
+    if (!isAuthenticated && typeof window !== 'undefined') {
+      const today = new Date().toDateString()
+      const storedData = localStorage.getItem('askverba_guest_translations')
+
+      if (storedData) {
+        try {
+          const { date, count } = JSON.parse(storedData)
+          if (date === today) {
+            setGuestTranslationCount(count)
+          } else {
+            // Reset count for new day
+            localStorage.setItem(
+              'askverba_guest_translations',
+              JSON.stringify({ date: today, count: 0 }),
+            )
+            setGuestTranslationCount(0)
+          }
+        } catch {
+          // Invalid data, reset
+          localStorage.setItem(
+            'askverba_guest_translations',
+            JSON.stringify({ date: today, count: 0 }),
+          )
+          setGuestTranslationCount(0)
+        }
+      } else {
+        // First time, initialize
+        localStorage.setItem(
+          'askverba_guest_translations',
+          JSON.stringify({ date: today, count: 0 }),
+        )
+      }
+    }
+  }, [isAuthenticated])
+
+  // Save guest translation count to localStorage when it changes
+  useEffect(() => {
+    if (!isAuthenticated && typeof window !== 'undefined' && guestTranslationCount > 0) {
+      const today = new Date().toDateString()
+      localStorage.setItem(
+        'askverba_guest_translations',
+        JSON.stringify({
+          date: today,
+          count: guestTranslationCount,
+        }),
+      )
+    }
+  }, [guestTranslationCount, isAuthenticated])
+
   const handleTranslate = useCallback(async () => {
     if (!inputText.trim()) return
+
+    // Check guest limitations
+    const maxGuestTranslations = 30
+    if (!isAuthenticated && guestTranslationCount >= maxGuestTranslations) {
+      // TODO: Show limit reached message
+      return
+    }
+
     setIsLoading(true)
     setTranslationResult(null)
     try {
       const result = await onTranslate(inputText, translationMode)
       setTranslationResult(result)
-      setTranslationCount((prev) => prev + 1)
+
+      // Increment guest translation count if not authenticated
+      if (!isAuthenticated) {
+        setGuestTranslationCount((prev) => prev + 1)
+      }
+
       if (translationMode === 'detailed') {
         setExpandedSections(['meanings', 'examples', 'usage_tips'])
       }
-    } catch (error) {
+    } catch (_error) {
       // TODO: Show error state to user
     } finally {
       setIsLoading(false)
     }
-  }, [inputText, translationMode, onTranslate])
+  }, [inputText, translationMode, onTranslate, isAuthenticated, guestTranslationCount])
 
   const handleDebouncedInput = (text: string) => {
     setInputText(text)
@@ -107,6 +173,14 @@ const IntegratedTranslator: React.FC<IntegratedTranslatorProps> = ({
         Terjemahan hanya tersedia dari <b>Inggris ke Indonesia</b>. Fitur ini masih dalam tahap{' '}
         <b>beta</b>.
       </div>
+
+      {/* Guest Limitation Banner */}
+      {!isAuthenticated && (
+        <div className="mb-6">
+          <GuestLimitationBanner translationCount={guestTranslationCount} maxTranslations={30} />
+        </div>
+      )}
+
       <Card className="border-0 shadow-lg rounded-2xl bg-white dark:bg-gray-950">
         <CardContent className="p-0">
           <TranslatorInput
