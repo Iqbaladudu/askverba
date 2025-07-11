@@ -433,15 +433,25 @@ export const practiceAPI = {
 
   async getWordsForPractice(customerId: string, options: any = {}) {
     const { limit = 20, difficulty, status } = options
-    let query = `where[customer][equals]=${customerId}&limit=${limit}`
 
-    if (difficulty && difficulty !== 'all') query += `&where[difficulty][equals]=${difficulty}`
-    if (status && status !== 'all') query += `&where[status][equals]=${status}`
+    // Build query parameters object, only including valid values
+    const queryParams = new URLSearchParams({
+      customerId,
+      limit: limit.toString(),
+      sortBy: 'lastPracticed',
+      sortOrder: 'asc',
+    })
 
-    // Sort by spaced repetition algorithm (least recently practiced first, then by accuracy)
-    query += '&sort=lastPracticed,accuracy'
+    // Only add optional parameters if they have valid values
+    if (difficulty && difficulty !== 'all' && difficulty !== null && difficulty !== undefined) {
+      queryParams.append('difficulty', difficulty)
+    }
 
-    return payloadAPI(`/vocabulary?${query}`)
+    if (status && status !== 'all' && status !== null && status !== undefined) {
+      queryParams.append('status', status)
+    }
+
+    return payloadAPI(`/vocabulary?${queryParams.toString()}`)
   },
 }
 

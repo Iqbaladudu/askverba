@@ -1,14 +1,20 @@
 'use server'
 
-import { clearAuthCookies } from '@/lib/auth/server-cookies'
-import { ActionResult, createActionResult, handleActionError } from '@/shared/types/action'
+import { clearAuthCookies } from '@/lib/server-cookies'
 
-export async function logoutCustomerAction(): Promise<ActionResult<void>> {
+type LogoutCustomerResult = {
+  success: boolean
+  error?: string
+}
+
+export async function logoutCustomerAction(): Promise<LogoutCustomerResult> {
   try {
     // Clear server-side cookies (main logout action)
     await clearAuthCookies()
 
-    return createActionResult(true)
+    return {
+      success: true,
+    }
   } catch (error: unknown) {
     console.error('Logout error:', error)
 
@@ -19,7 +25,8 @@ export async function logoutCustomerAction(): Promise<ActionResult<void>> {
       console.error('Error clearing cookies:', clearError)
     }
 
-    // Return success to clear client-side auth even if server-side fails
-    return createActionResult(true)
+    return {
+      success: true, // Return success to clear client-side auth
+    }
   }
 }

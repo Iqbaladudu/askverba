@@ -86,16 +86,23 @@ export async function GET(request: NextRequest) {
       sortBy = sortFields[0] // Use first field as primary sort
     }
 
-    const queryParams = {
+    const queryParams: any = {
       customerId: customer.id,
       page: searchParams.get('page') || '1',
       limit: searchParams.get('limit') || '20',
-      status: searchParams.get('status'),
-      difficulty: searchParams.get('difficulty'),
-      search: searchParams.get('search'),
       sortBy,
       sortOrder,
     }
+
+    // Only include optional parameters if they exist and are not null
+    const status = searchParams.get('status')
+    if (status) queryParams.status = status
+
+    const difficulty = searchParams.get('difficulty')
+    if (difficulty) queryParams.difficulty = difficulty
+
+    const search = searchParams.get('search')
+    if (search) queryParams.search = search
 
     const validatedQuery = validateRequest(VocabularyQuerySchema, queryParams)
 

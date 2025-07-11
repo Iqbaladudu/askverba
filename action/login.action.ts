@@ -45,7 +45,7 @@ export async function loginCustomerAction(input: LoginCustomerInput): Promise<Lo
       }
 
       // Set cookies on server-side for better security
-      await setAuthCookies(result.token, customer)
+      await setAuthCookies(result.token!, customer)
 
       // Return safe customer data (without password)
       return {

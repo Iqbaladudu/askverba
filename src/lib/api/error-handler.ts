@@ -34,7 +34,7 @@ export class AppError extends Error {
     message: string,
     public code: ErrorCode,
     public statusCode: number = 500,
-    public details?: any
+    public details?: any,
   ) {
     super(message)
     this.name = 'AppError'
@@ -47,7 +47,7 @@ export class AppError extends Error {
 export function handleApiError(
   error: unknown,
   path?: string,
-  requestId?: string
+  requestId?: string,
 ): NextResponse<ApiErrorResponse> {
   console.error('[API Error]', {
     error,
@@ -67,7 +67,7 @@ export function handleApiError(
         path,
         requestId,
       },
-      { status: 400 }
+      { status: 400 },
     )
   }
 
@@ -82,14 +82,14 @@ export function handleApiError(
         path,
         requestId,
       },
-      { status: error.statusCode }
+      { status: error.statusCode },
     )
   }
 
   // Handle Payload CMS errors
   if (error && typeof error === 'object' && 'name' in error) {
     const payloadError = error as any
-    
+
     if (payloadError.name === 'ValidationError') {
       return NextResponse.json(
         {
@@ -100,7 +100,7 @@ export function handleApiError(
           path,
           requestId,
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -113,7 +113,7 @@ export function handleApiError(
           path,
           requestId,
         },
-        { status: 403 }
+        { status: 403 },
       )
     }
 
@@ -126,7 +126,7 @@ export function handleApiError(
           path,
           requestId,
         },
-        { status: 404 }
+        { status: 404 },
       )
     }
   }
@@ -134,7 +134,7 @@ export function handleApiError(
   // Handle MongoDB/Database errors
   if (error && typeof error === 'object' && 'code' in error) {
     const dbError = error as any
-    
+
     if (dbError.code === 11000) {
       return NextResponse.json(
         {
@@ -145,7 +145,7 @@ export function handleApiError(
           path,
           requestId,
         },
-        { status: 409 }
+        { status: 409 },
       )
     }
   }
@@ -161,7 +161,7 @@ export function handleApiError(
           path,
           requestId,
         },
-        { status: 408 }
+        { status: 408 },
       )
     }
 
@@ -174,7 +174,7 @@ export function handleApiError(
           path,
           requestId,
         },
-        { status: 503 }
+        { status: 503 },
       )
     }
   }
@@ -188,7 +188,7 @@ export function handleApiError(
       path,
       requestId,
     },
-    { status: 500 }
+    { status: 500 },
   )
 }
 
@@ -206,35 +206,22 @@ export function handleServerActionError(error: unknown): never {
   }
 
   if (error instanceof ZodError) {
-    throw new AppError(
-      'Validation failed',
-      ErrorCode.VALIDATION_ERROR,
-      400,
-      error.errors
-    )
+    throw new AppError('Validation failed', ErrorCode.VALIDATION_ERROR, 400, error.errors)
   }
 
   if (error instanceof Error) {
     if (error.name === 'AbortError' || error.message.includes('timeout')) {
-      throw new AppError(
-        'Request timeout',
-        ErrorCode.TIMEOUT_ERROR,
-        408
-      )
+      throw new AppError('Request timeout', ErrorCode.TIMEOUT_ERROR, 408)
     }
 
     throw new AppError(
       error.message || 'Internal server error',
       ErrorCode.INTERNAL_SERVER_ERROR,
-      500
+      500,
     )
   }
 
-  throw new AppError(
-    'Unknown error occurred',
-    ErrorCode.INTERNAL_SERVER_ERROR,
-    500
-  )
+  throw new AppError('Unknown error occurred', ErrorCode.INTERNAL_SERVER_ERROR, 500)
 }
 
 /**
@@ -244,7 +231,7 @@ export function createErrorResponse(
   message: string,
   code: ErrorCode,
   statusCode: number = 500,
-  details?: any
+  details?: any,
 ): NextResponse<ApiErrorResponse> {
   return NextResponse.json(
     {
@@ -253,27 +240,19 @@ export function createErrorResponse(
       details,
       timestamp: new Date().toISOString(),
     },
-    { status: statusCode }
+    { status: statusCode },
   )
 }
 
 /**
  * Validation helper for API routes
  */
-export function validateRequest<T>(
-  schema: any,
-  data: unknown
-): T {
+export function validateRequest<T>(schema: any, data: unknown): T {
   try {
     return schema.parse(data)
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new AppError(
-        'Validation failed',
-        ErrorCode.VALIDATION_ERROR,
-        400,
-        error.errors
-      )
+      throw new AppError('Validation failed', ErrorCode.VALIDATION_ERROR, 400, error.errors)
     }
     throw error
   }
@@ -284,11 +263,7 @@ export function validateRequest<T>(
  */
 export function requireAuth(token?: string | null): void {
   if (!token) {
-    throw new AppError(
-      'Authentication required',
-      ErrorCode.AUTHENTICATION_ERROR,
-      401
-    )
+    throw new AppError('Authentication required', ErrorCode.AUTHENTICATION_ERROR, 401)
   }
 }
 
@@ -298,13 +273,13 @@ export function requireAuth(token?: string | null): void {
 export function checkRateLimit(
   identifier: string,
   limit: number = 100,
-  window: number = 60000 // 1 minute
+  window: number = 60000, // 1 minute
 ): boolean {
   // This is a simple in-memory rate limiter
   // In production, use Redis or a proper rate limiting service
   const now = Date.now()
   const key = `rate_limit:${identifier}`
-  
+
   // For now, return true (no rate limiting)
   // TODO: Implement proper rate limiting with Redis
   return true

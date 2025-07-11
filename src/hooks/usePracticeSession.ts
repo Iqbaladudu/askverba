@@ -93,11 +93,11 @@ export function usePracticeSession() {
         status: config.status,
       })
 
-      if (!response.docs || response.docs.length === 0) {
+      if (!response.data?.docs || response.data.docs.length === 0) {
         throw new Error('No vocabulary words available for practice')
       }
 
-      const words: PracticeWord[] = response.docs.map((vocab: Vocabulary) => ({
+      const words: PracticeWord[] = response.data.docs.map((vocab: Vocabulary) => ({
         id: vocab.id,
         vocabulary: vocab,
         timeSpent: 0,
@@ -145,8 +145,8 @@ export function usePracticeSession() {
     }
   }
 
-  const submitAnswer = (userAnswer: string, isCorrect: boolean, timeSpent: number = 0) => {
-    if (!session) return
+  const submitAnswer = (userAnswer: string, isCorrect: boolean, timeSpent: number = 0): boolean => {
+    if (!session) return false
 
     const updatedWords = [...session.words]
     const currentWord = updatedWords[session.currentIndex]
