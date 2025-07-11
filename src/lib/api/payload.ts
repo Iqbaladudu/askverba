@@ -1,7 +1,5 @@
 import { getAuthTokenFromDocument, getAuthTokenHybrid } from '@/lib/auth-cookies'
 
-const PAYLOAD_API_URL = process.env.NEXT_PUBLIC_PAYLOAD_URL || 'http://localhost:3001'
-
 // Get token from server-side cookies via API route
 async function getTokenFromServer(): Promise<string | null> {
   try {
@@ -59,7 +57,7 @@ async function payloadAPI(endpoint: string, options: RequestInit = {}) {
   console.log('Request headers:', headers)
   console.log('Request body:', options.body)
 
-  const response = await fetch(`${PAYLOAD_API_URL}/api${endpoint}`, {
+  const response = await fetch(`/api${endpoint}`, {
     headers,
     ...options,
   })
