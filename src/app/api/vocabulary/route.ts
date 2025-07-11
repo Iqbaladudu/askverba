@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
 
     // Handle different sort parameter formats
     let sortBy = searchParams.get('sortBy')
-    let sortOrder = searchParams.get('sortOrder') || 'desc'
+    const sortOrder = searchParams.get('sortOrder') || 'desc'
 
     // Handle Payload CMS style sort parameter (e.g., "sort=lastPracticed,accuracy")
     const sortParam = searchParams.get('sort')
