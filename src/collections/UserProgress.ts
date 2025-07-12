@@ -8,38 +8,17 @@ export const UserProgress: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
-      // Users can only read their own progress
-      if (user?.collection === 'customers') {
-        return {
-          customer: {
-            equals: user.id,
-          },
-        }
-      }
-      return true // Admins can read all
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
     },
-    create: ({ req: { user } }) => {
-      return user?.collection === 'customers' || user?.collection === 'users'
-    },
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
-      if (user?.collection === 'customers') {
-        return {
-          customer: {
-            equals: user.id,
-          },
-        }
-      }
-      return true
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
     },
     delete: ({ req: { user } }) => {
-      if (user?.collection === 'customers') {
-        return {
-          customer: {
-            equals: user.id,
-          },
-        }
-      }
-      return true
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
     },
   },
   fields: [

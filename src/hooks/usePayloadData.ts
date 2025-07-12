@@ -376,8 +376,23 @@ export function useLearningGoals(options: any = {}) {
 
     try {
       setLoading(true)
-      const response = await learningGoalsAPI.getByCustomer(customer.id, options)
-      setGoals(response.docs || [])
+
+      // Build query parameters
+      const queryParams = new URLSearchParams()
+      if (options.status) queryParams.append('status', options.status)
+      if (options.category) queryParams.append('category', options.category)
+      if (options.limit) queryParams.append('limit', options.limit.toString())
+      if (options.page) queryParams.append('page', options.page.toString())
+
+      const queryString = queryParams.toString()
+      const url = queryString ? `/api/learning-goals?${queryString}` : '/api/learning-goals'
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error('Failed to fetch goals')
+      }
+
+      const result = await response.json()
+      setGoals(result.data?.docs || [])
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch goals')
@@ -391,12 +406,21 @@ export function useLearningGoals(options: any = {}) {
       if (!customer?.id) return
 
       try {
-        const response = await learningGoalsAPI.create({
-          ...data,
-          customer: customer.id,
+        const response = await fetch('/api/learning-goals', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
         })
+
+        if (!response.ok) {
+          throw new Error('Failed to create goal')
+        }
+
+        const result = await response.json()
         await fetchGoals() // Refresh data
-        return response
+        return result.data
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to create goal')
         throw err
@@ -407,16 +431,80 @@ export function useLearningGoals(options: any = {}) {
 
   const updateGoalProgress = useCallback(
     async (id: string, current: number) => {
+      if (!customer?.id) return
+
       try {
-        const response = await learningGoalsAPI.updateProgress(id, current)
+        const response = await fetch('/api/learning-goals', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id, current }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to update goal progress')
+        }
+
+        const result = await response.json()
         await fetchGoals() // Refresh data
-        return response
+        return result.data
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to update goal progress')
         throw err
       }
     },
-    [fetchGoals],
+    [customer?.id, fetchGoals],
+  )
+
+  const updateGoal = useCallback(
+    async (id: string, data: any) => {
+      if (!customer?.id) return
+
+      try {
+        const response = await fetch('/api/learning-goals', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id, ...data }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to update goal')
+        }
+
+        const result = await response.json()
+        await fetchGoals() // Refresh data
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update goal')
+        throw err
+      }
+    },
+    [customer?.id, fetchGoals],
+  )
+
+  const deleteGoal = useCallback(
+    async (id: string) => {
+      if (!customer?.id) return
+
+      try {
+        const response = await fetch(`/api/learning-goals?id=${id}`, {
+          method: 'DELETE',
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to delete goal')
+        }
+
+        await fetchGoals() // Refresh data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to delete goal')
+        throw err
+      }
+    },
+    [customer?.id, fetchGoals],
   )
 
   useEffect(() => {
@@ -428,7 +516,9 @@ export function useLearningGoals(options: any = {}) {
     loading,
     error,
     createGoal,
+    updateGoal,
     updateGoalProgress,
+    deleteGoal,
     refetch: fetchGoals,
   }
 }

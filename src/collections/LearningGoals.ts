@@ -8,38 +8,17 @@ export const LearningGoals: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
-      // Users can only read their own goals
-      if (user?.collection === 'customers') {
-        return {
-          customer: {
-            equals: user.id,
-          },
-        }
-      }
-      return true // Admins can read all
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
     },
-    create: ({ req: { user } }) => {
-      return user?.collection === 'customers' || user?.collection === 'users'
-    },
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
-      if (user?.collection === 'customers') {
-        return {
-          customer: {
-            equals: user.id,
-          },
-        }
-      }
-      return true
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
     },
     delete: ({ req: { user } }) => {
-      if (user?.collection === 'customers') {
-        return {
-          customer: {
-            equals: user.id,
-          },
-        }
-      }
-      return true
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
     },
   },
   fields: [
@@ -193,11 +172,11 @@ export const LearningGoals: CollectionConfig = {
         if (operation === 'create' && req.user?.collection === 'customers') {
           data.customer = req.user.id
         }
-        
+
         // Auto-update status based on progress and deadline
         if (data.target && data.current) {
           const progressPercentage = (data.current / data.target) * 100
-          
+
           if (progressPercentage >= 100 && data.status !== 'completed') {
             data.status = 'completed'
             data.completedAt = new Date().toISOString()
@@ -205,7 +184,7 @@ export const LearningGoals: CollectionConfig = {
             data.status = 'overdue'
           }
         }
-        
+
         return data
       },
     ],

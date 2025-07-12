@@ -5,7 +5,6 @@
 
 'use server'
 
-import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -25,10 +24,7 @@ interface AuthResult {
 /**
  * Login action with validation and error handling
  */
-export async function loginAction(
-  prevState: any,
-  formData: FormData
-): Promise<AuthResult> {
+export async function loginAction(prevState: any, formData: FormData): Promise<AuthResult> {
   try {
     // Validate input
     const validatedData = validateRequest(LoginSchema, {
@@ -48,11 +44,7 @@ export async function loginAction(
     })
 
     if (!result.user || !result.token) {
-      throw new AppError(
-        'Invalid credentials',
-        ErrorCode.AUTHENTICATION_ERROR,
-        401
-      )
+      throw new AppError('Invalid credentials', ErrorCode.AUTHENTICATION_ERROR, 401)
     }
 
     // Set authentication cookies
@@ -65,10 +57,9 @@ export async function loginAction(
       customer: result.user,
       token: result.token,
     }
-
   } catch (error) {
     console.error('Login action error:', error)
-    
+
     if (error instanceof AppError) {
       return {
         success: false,
@@ -86,10 +77,7 @@ export async function loginAction(
 /**
  * Register action with validation and error handling
  */
-export async function registerAction(
-  prevState: any,
-  formData: FormData
-): Promise<AuthResult> {
+export async function registerAction(prevState: any, formData: FormData): Promise<AuthResult> {
   try {
     // Validate input
     const validatedData = validateRequest(RegisterSchema, {
@@ -112,11 +100,7 @@ export async function registerAction(
     })
 
     if (existingUser.docs.length > 0) {
-      throw new AppError(
-        'User with this email already exists',
-        ErrorCode.VALIDATION_ERROR,
-        400
-      )
+      throw new AppError('User with this email already exists', ErrorCode.VALIDATION_ERROR, 400)
     }
 
     // Create new user
@@ -142,7 +126,7 @@ export async function registerAction(
       throw new AppError(
         'Registration successful but login failed',
         ErrorCode.INTERNAL_SERVER_ERROR,
-        500
+        500,
       )
     }
 
@@ -156,10 +140,9 @@ export async function registerAction(
       customer: loginResult.user,
       token: loginResult.token,
     }
-
   } catch (error) {
     console.error('Register action error:', error)
-    
+
     if (error instanceof AppError) {
       return {
         success: false,
@@ -177,21 +160,24 @@ export async function registerAction(
 /**
  * Logout action with proper cleanup
  */
-export async function logoutAction(): Promise<void> {
+export async function logoutAction(): Promise<{ success: boolean; error?: string }> {
   try {
     // Clear authentication cookies
     await clearAuthCookiesOnServer()
-    
+
     console.log('Logout successful')
-    
+
+    return { success: true }
   } catch (error) {
     console.error('Logout action error:', error)
     // Don't throw error for logout - always clear cookies
     await clearAuthCookiesOnServer()
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Logout failed',
+    }
   }
-  
-  // Redirect to home page
-  redirect('/')
 }
 
 /**
@@ -209,17 +195,17 @@ export async function getCurrentUser(): Promise<any | null> {
 
     // Parse customer data
     const customer = JSON.parse(customerData)
-    
+
     // Optionally validate token with Payload
     const payload = await getPayload({ config })
-    
+
     try {
       const me = await payload.auth({
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      
+
       if (me.user) {
         return me.user
       }
@@ -231,7 +217,6 @@ export async function getCurrentUser(): Promise<any | null> {
     }
 
     return customer
-
   } catch (error) {
     console.error('Get current user error:', error)
     return null
@@ -244,15 +229,14 @@ export async function getCurrentUser(): Promise<any | null> {
 export async function validateAuthToken(token: string): Promise<boolean> {
   try {
     const payload = await getPayload({ config })
-    
+
     const result = await payload.auth({
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-    
-    return !!result.user
 
+    return !!result.user
   } catch (error) {
     console.error('Token validation error:', error)
     return false
@@ -268,15 +252,11 @@ export async function refreshAuthToken(): Promise<AuthResult> {
     const currentToken = cookieStore.get('auth-token')?.value
 
     if (!currentToken) {
-      throw new AppError(
-        'No token to refresh',
-        ErrorCode.AUTHENTICATION_ERROR,
-        401
-      )
+      throw new AppError('No token to refresh', ErrorCode.AUTHENTICATION_ERROR, 401)
     }
 
     const payload = await getPayload({ config })
-    
+
     // Validate current token and get user
     const authResult = await payload.auth({
       headers: {
@@ -285,11 +265,7 @@ export async function refreshAuthToken(): Promise<AuthResult> {
     })
 
     if (!authResult.user) {
-      throw new AppError(
-        'Invalid token',
-        ErrorCode.AUTHENTICATION_ERROR,
-        401
-      )
+      throw new AppError('Invalid token', ErrorCode.AUTHENTICATION_ERROR, 401)
     }
 
     // For now, return the same token
@@ -299,13 +275,12 @@ export async function refreshAuthToken(): Promise<AuthResult> {
       customer: authResult.user,
       token: currentToken,
     }
-
   } catch (error) {
     console.error('Token refresh error:', error)
-    
+
     // Clear invalid cookies
     await clearAuthCookiesOnServer()
-    
+
     if (error instanceof AppError) {
       return {
         success: false,

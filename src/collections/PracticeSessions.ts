@@ -4,29 +4,17 @@ export const PracticeSessions: CollectionConfig = {
   slug: 'practice-sessions',
   access: {
     read: ({ req: { user } }) => {
-      if (user?.role === 'admin') return true
-      return {
-        customer: {
-          equals: user?.id,
-        },
-      }
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
     },
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
-      if (user?.role === 'admin') return true
-      return {
-        customer: {
-          equals: user?.id,
-        },
-      }
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
     },
     delete: ({ req: { user } }) => {
-      if (user?.role === 'admin') return true
-      return {
-        customer: {
-          equals: user?.id,
-        },
-      }
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
     },
   },
   fields: [
@@ -155,7 +143,7 @@ export const PracticeSessions: CollectionConfig = {
         // Update vocabulary practice statistics after session completion
         if (operation === 'create' && doc.words) {
           const payload = req.payload
-          
+
           for (const wordResult of doc.words) {
             try {
               // Get current vocabulary item
@@ -169,13 +157,18 @@ export const PracticeSessions: CollectionConfig = {
                 const currentPracticeCount = vocabulary.practiceCount || 0
                 const currentAccuracy = vocabulary.accuracy || 0
                 const newPracticeCount = currentPracticeCount + 1
-                
+
                 // Calculate new accuracy (weighted average)
-                const newAccuracy = currentPracticeCount === 0 
-                  ? (wordResult.isCorrect ? 100 : 0)
-                  : Math.round(
-                      ((currentAccuracy * currentPracticeCount) + (wordResult.isCorrect ? 100 : 0)) / newPracticeCount
-                    )
+                const newAccuracy =
+                  currentPracticeCount === 0
+                    ? wordResult.isCorrect
+                      ? 100
+                      : 0
+                    : Math.round(
+                        (currentAccuracy * currentPracticeCount +
+                          (wordResult.isCorrect ? 100 : 0)) /
+                          newPracticeCount,
+                      )
 
                 // Update vocabulary item
                 await payload.update({

@@ -344,6 +344,7 @@ export const practiceAPI = {
   },
 
   async create(data: any) {
+    console.log(data)
     return payloadAPI('/practice-sessions', {
       method: 'POST',
       body: JSON.stringify(data),

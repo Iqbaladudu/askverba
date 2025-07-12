@@ -22,24 +22,16 @@ export const Vocabulary: CollectionConfig = {
       return user?.collection === 'customers' || user?.collection === 'users'
     },
     update: ({ req: { user } }) => {
-      if (user?.collection === 'customers') {
-        return {
-          customer: {
-            equals: user.id,
-          },
-        }
+      if (user?.collection === 'customers' || user?.collection === 'users') {
+        return true
       }
-      return true
+      return false
     },
     delete: ({ req: { user } }) => {
-      if (user?.collection === 'customers') {
-        return {
-          customer: {
-            equals: user.id,
-          },
-        }
+      if (user?.collection === 'customers' || user?.collection === 'users') {
+        return true
       }
-      return true
+      return false
     },
   },
   fields: [

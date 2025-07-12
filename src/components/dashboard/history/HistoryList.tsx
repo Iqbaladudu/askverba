@@ -364,14 +364,14 @@ export function HistoryList({ filters }: HistoryListProps) {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                   <Button size="sm" variant="outline" className="h-7 text-xs">
                     Translate Again
                   </Button>
                   <Button size="sm" className="h-7 text-xs">
                     Use as Template
                   </Button>
-                </div>
+                </div> */}
               </div>
             </div>
           </CardContent>

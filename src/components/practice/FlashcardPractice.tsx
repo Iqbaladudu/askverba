@@ -4,18 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  RotateCcw,
-  Volume2,
-  CheckCircle,
-  XCircle,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  ArrowLeft,
-  Pause,
-  Play,
-} from 'lucide-react'
+import { Volume2, CheckCircle, XCircle, Eye, EyeOff, ArrowLeft, Pause, Play } from 'lucide-react'
 import { PracticeSession, PracticeWord } from '@/hooks/usePracticeSession'
 
 interface FlashcardPracticeProps {

@@ -4,15 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { 
-  MessageSquare, 
-  Search, 
-  Bell, 
-  Settings, 
-  User,
-  LogOut,
-  Menu
-} from 'lucide-react'
+import { MessageSquare, Search, Bell, Settings, User, LogOut, Menu } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,11 +24,23 @@ export function DashboardHeader() {
 
   const handleLogout = async () => {
     try {
-      await logoutCustomerAction()
+      // Clear client-side state first
       logout()
-      toast.success('Logged out successfully')
+
+      // Then clear server-side cookies
+      const result = await logoutCustomerAction()
+
+      if (result.success) {
+        toast.success('Logged out successfully')
+        // Redirect to home page
+        window.location.href = '/'
+      } else {
+        toast.error(result.error || 'Logout failed')
+      }
     } catch (error) {
       toast.error('Logout failed')
+      // Force redirect even if server action fails
+      window.location.href = '/'
     }
   }
 
@@ -48,9 +52,7 @@ export function DashboardHeader() {
           <span className="bg-primary-500 p-2 rounded-xl">
             <MessageSquare className="h-6 w-6 text-white" />
           </span>
-          <span className="text-xl font-bold text-primary-500 tracking-tight">
-            AskVerba
-          </span>
+          <span className="text-xl font-bold text-primary-500 tracking-tight">AskVerba</span>
           <Badge variant="secondary" className="ml-2 text-xs">
             Dashboard
           </Badge>
@@ -110,7 +112,7 @@ export function DashboardHeader() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleLogout}
                 className="flex items-center gap-2 text-red-600 focus:text-red-600"
               >

@@ -6,7 +6,6 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import {
   Menu,
@@ -14,8 +13,6 @@ import {
   X,
   User,
   LogOut,
-  Search,
-  Bell,
   Settings,
   Home,
   Languages,
@@ -62,7 +59,6 @@ const DASHBOARD_NAV_ITEMS: NavItem[] = [
 
 const Navbar: React.FC = () => {
   const [open, setOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const { isAuthenticated, customer, logout, isLoading } = useAuth()
   const pathname = usePathname()
 
@@ -74,11 +70,23 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await logoutAction()
+      // Clear client-side state first
       logout()
-      toast.success('Logged out successfully')
+
+      // Then clear server-side cookies
+      const result = await logoutAction()
+
+      if (result.success) {
+        toast.success('Logged out successfully')
+        // Redirect to home page
+        window.location.href = '/'
+      } else {
+        toast.error(result.error || 'Logout failed')
+      }
     } catch (error) {
       toast.error('Logout failed')
+      // Force redirect even if server action fails
+      window.location.href = '/'
     }
   }
 
@@ -91,15 +99,10 @@ const Navbar: React.FC = () => {
             <MessageSquare className="h-6 w-6 text-white" />
           </span>
           <span className="text-xl font-bold text-primary-500 tracking-tight">AskVerba</span>
-          {isDashboard && (
-            <Badge variant="secondary" className="ml-2 text-xs">
-              Dashboard
-            </Badge>
-          )}
         </Link>
 
         {/* Search Bar - Only for authenticated users */}
-        {isAuthenticated && (
+        {/* {isAuthenticated && (
           <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 h-4 w-4" />
@@ -112,7 +115,7 @@ const Navbar: React.FC = () => {
               />
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-1">
@@ -132,15 +135,15 @@ const Navbar: React.FC = () => {
               {isAuthenticated ? (
                 <>
                   {/* Search Button - Mobile only */}
-                  <Button variant="ghost" size="icon" className="md:hidden">
+                  {/* <Button variant="ghost" size="icon" className="md:hidden">
                     <Search className="h-5 w-5" />
-                  </Button>
+                  </Button> */}
 
-                  {/* Notifications */}
+                  {/* Notifications
                   <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
                     <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary-500 rounded-full"></span>
-                  </Button>
+                  </Button> */}
 
                   {/* User Menu */}
                   <DropdownMenu>
@@ -214,7 +217,7 @@ const Navbar: React.FC = () => {
               className="w-[280px] bg-white border-l border-neutral-200 px-0"
             >
               <div className="flex flex-col gap-6 mt-12 px-6">
-                <Link
+                {/* <Link
                   href={isAuthenticated ? '/dashboard' : '/'}
                   className="flex items-center gap-2 mb-6"
                   onClick={() => setOpen(false)}
@@ -228,10 +231,10 @@ const Navbar: React.FC = () => {
                       Dashboard
                     </Badge>
                   )}
-                </Link>
+                </Link> */}
 
                 {/* Mobile Search - Only for authenticated users */}
-                {isAuthenticated && (
+                {/* {isAuthenticated && (
                   <div className="mb-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 h-4 w-4" />
@@ -244,7 +247,7 @@ const Navbar: React.FC = () => {
                       />
                     </div>
                   </div>
-                )}
+                )} */}
 
                 {/* Navigation Items */}
                 {navItems.map((item) => {

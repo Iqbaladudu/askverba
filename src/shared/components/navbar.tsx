@@ -74,11 +74,23 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await logoutCustomerAction()
+      // Clear client-side state first
       logout()
-      toast.success('Logged out successfully')
+
+      // Then clear server-side cookies
+      const result = await logoutCustomerAction()
+
+      if (result.success) {
+        toast.success('Logged out successfully')
+        // Redirect to home page
+        window.location.href = '/'
+      } else {
+        toast.error(result.error || 'Logout failed')
+      }
     } catch (error) {
       toast.error('Logout failed')
+      // Force redirect even if server action fails
+      window.location.href = '/'
     }
   }
 
