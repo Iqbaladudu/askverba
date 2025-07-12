@@ -42,8 +42,6 @@ export default buildConfig({
     PracticeSessions,
   ],
   editor: lexicalEditor(),
-  csrf: [process.env.NEXT_PUBLIC_PAYLOAD_URL || 'http://localhost:3000'],
-  cors: [process.env.NEXT_PUBLIC_PAYLOAD_URL || 'http://localhost:3000'],
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
