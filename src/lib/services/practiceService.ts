@@ -112,9 +112,11 @@ async function updateVocabularyStats(
 
     // Determine new status based on performance
     let newStatus = vocabulary.status
-    if (newAccuracy >= 80 && newPracticeCount >= 5) {
+    if (newAccuracy >= 80 && newPracticeCount >= 3) {
+      // Reduced from 5 to 3
       newStatus = 'mastered'
-    } else if (newPracticeCount >= 2) {
+    } else if (newPracticeCount >= 1) {
+      // Reduced from 2 to 1
       newStatus = 'learning'
     }
 

@@ -1,262 +1,261 @@
 /**
- * Centralized API client with Next.js best practices
- * Handles authentication, error handling, and request optimization
+ * Client-side API layer for calling API routes
+ * This replaces the direct server action calls in client components
  */
 
-import { getAuthTokenHybrid } from '@/lib/auth-cookies'
-import { withApiRetry } from '@/lib/error/retry-strategy'
-import { PerformanceMonitor } from '@/lib/monitoring/performance'
-import { log } from '@/lib/monitoring/logger'
-
-// API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
-const API_TIMEOUT = 30000 // 30 seconds
-
-// Request types
-export interface ApiRequestConfig {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  headers?: Record<string, string>
-  body?: any
-  timeout?: number
-  cache?: RequestCache
-  next?: NextFetchRequestConfig
-}
-
-export interface ApiResponse<T = any> {
-  data: T
-  success: boolean
-  error?: string
-  meta?: {
-    page?: number
-    limit?: number
-    total?: number
-    fromCache?: boolean
-    processingTime?: number
-  }
-}
-
-// Error types
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public code?: string,
-    public details?: any,
-  ) {
-    super(message)
-    this.name = 'ApiError'
-  }
-}
-
-// Request deduplication map
-const pendingRequests = new Map<string, Promise<any>>()
-
-/**
- * Generate cache key for request deduplication
- */
-function generateRequestKey(url: string, config: ApiRequestConfig): string {
-  const method = config.method || 'GET'
-  const body = config.body ? JSON.stringify(config.body) : ''
-  return `${method}:${url}:${body}`
-}
-
-/**
- * Enhanced fetch with authentication, error handling, and deduplication
- */
-export async function apiClient<T = any>(
-  endpoint: string,
-  config: ApiRequestConfig = {},
-): Promise<ApiResponse<T>> {
-  const { method = 'GET', headers = {}, body, timeout = API_TIMEOUT, cache, next } = config
-
-  // Build full URL
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`
-
-  // Generate request key for deduplication
-  const requestKey = generateRequestKey(url, config)
-
-  // Check for pending request (deduplication)
-  if (pendingRequests.has(requestKey)) {
-    log.cache.hit(requestKey, 'deduplication')
-    return pendingRequests.get(requestKey)!
-  }
-
-  // Create the request promise with retry strategy
-  const requestPromise = withApiRetry(() =>
-    executeRequest<T>(url, {
-      method,
-      headers,
-      body,
-      timeout,
-      cache,
-      next,
-    }),
+// Helper function to create URLSearchParams without undefined values
+function createCleanParams(params: Record<string, any>): URLSearchParams {
+  const filteredParams = Object.fromEntries(
+    Object.entries(params).filter(([_, value]) => value !== undefined && value !== null),
   )
-
-  // Store in pending requests for deduplication
-  pendingRequests.set(requestKey, requestPromise)
-
-  try {
-    const result = await requestPromise
-    return result
-  } finally {
-    // Clean up pending request
-    pendingRequests.delete(requestKey)
-  }
+  return new URLSearchParams(filteredParams)
 }
 
-/**
- * Execute the actual HTTP request
- */
-async function executeRequest<T>(url: string, config: ApiRequestConfig): Promise<ApiResponse<T>> {
-  const startTime = Date.now()
-
-  try {
-    // Get authentication token
-    const token = getAuthTokenHybrid()
-
-    // Prepare headers
-    const requestHeaders: Record<string, string> = {
+// Base API function for client-side requests
+async function apiRequest(endpoint: string, options: RequestInit = {}) {
+  const response = await fetch(`/api${endpoint}`, {
+    headers: {
       'Content-Type': 'application/json',
-      ...config.headers,
-    }
+      ...options.headers,
+    },
+    ...options,
+  })
 
-    // Add authentication if token exists
-    if (token) {
-      requestHeaders.Authorization = `Bearer ${token}`
-    }
-
-    // Prepare fetch options
-    const fetchOptions: RequestInit = {
-      method: config.method,
-      headers: requestHeaders,
-      cache: config.cache,
-      next: config.next,
-    }
-
-    // Add body for non-GET requests
-    if (config.body && config.method !== 'GET') {
-      fetchOptions.body =
-        typeof config.body === 'string' ? config.body : JSON.stringify(config.body)
-    }
-
-    // Create abort controller for timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), config.timeout)
-    fetchOptions.signal = controller.signal
-
-    // Log API request
-    log.api.request(config.method || 'GET', url, {
-      headers: requestHeaders,
-      body: config.body,
-    })
-
-    // Execute request
-    const response = await fetch(url, fetchOptions)
-    clearTimeout(timeoutId)
-
-    const processingTime = Date.now() - startTime
-
-    // Log API response
-    log.api.response(config.method || 'GET', url, response.status, processingTime)
-
-    // Track performance metrics
-    PerformanceMonitor.trackApiCall(config.method || 'GET', url, processingTime, response.status, {
-      cacheHit: false, // Will be updated if from cache
-    })
-
-    // Handle response
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      const apiError = new ApiError(
-        errorData.error || `HTTP ${response.status}`,
-        response.status,
-        errorData.code,
-        errorData.details,
-      )
-
-      // Log API error
-      log.api.error(config.method || 'GET', url, apiError, {
-        status: response.status,
-        errorData,
-      })
-
-      throw apiError
-    }
-
-    const data = await response.json()
-
-    return {
-      data: data.data || data,
-      success: data.success !== false,
-      error: data.error,
-      meta: {
-        ...data.meta,
-        processingTime,
-        fromCache: data.fromCache || false,
-      },
-    }
-  } catch (error) {
-    const processingTime = Date.now() - startTime
-
-    if (error instanceof ApiError) {
-      // Already logged in response handling
-      throw error
-    }
-
-    let apiError: ApiError
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        apiError = new ApiError('Request timeout', 408, 'TIMEOUT')
-      } else {
-        apiError = new ApiError(error.message || 'Network error', 0, 'NETWORK_ERROR')
-      }
-    } else {
-      apiError = new ApiError('Unknown error', 500, 'UNKNOWN_ERROR')
-    }
-
-    // Log network/timeout errors
-    log.api.error(config.method || 'GET', url, apiError, {
-      processingTime,
-      originalError: error,
-    })
-
-    throw apiError
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`)
   }
+
+  return response.json()
 }
 
-/**
- * Convenience methods for different HTTP methods
- */
-export const api = {
-  get: <T = any>(endpoint: string, config?: Omit<ApiRequestConfig, 'method'>) =>
-    apiClient<T>(endpoint, { ...config, method: 'GET' }),
+// User Progress API
+export const userProgressAPI = {
+  async get(customerId: string) {
+    return apiRequest(`/user-progress?customerId=${customerId}`)
+  },
 
-  post: <T = any>(
-    endpoint: string,
-    body?: any,
-    config?: Omit<ApiRequestConfig, 'method' | 'body'>,
-  ) => apiClient<T>(endpoint, { ...config, method: 'POST', body }),
+  async create(data: any) {
+    return apiRequest('/user-progress', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
 
-  put: <T = any>(
-    endpoint: string,
-    body?: any,
-    config?: Omit<ApiRequestConfig, 'method' | 'body'>,
-  ) => apiClient<T>(endpoint, { ...config, method: 'PUT', body }),
+  async update(id: string, data: any) {
+    return apiRequest(`/user-progress/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  },
 
-  patch: <T = any>(
-    endpoint: string,
-    body?: any,
-    config?: Omit<ApiRequestConfig, 'method' | 'body'>,
-  ) => apiClient<T>(endpoint, { ...config, method: 'PATCH', body }),
-
-  delete: <T = any>(endpoint: string, config?: Omit<ApiRequestConfig, 'method'>) =>
-    apiClient<T>(endpoint, { ...config, method: 'DELETE' }),
+  async upsert(customerId: string, data: any) {
+    return apiRequest('/user-progress', {
+      method: 'PUT',
+      body: JSON.stringify({ customerId, data }),
+    })
+  },
 }
 
-/**
- * Clear all pending requests (useful for cleanup)
- */
-export function clearPendingRequests(): void {
-  pendingRequests.clear()
+// Vocabulary API (using custom endpoint to avoid conflicts with Payload admin)
+export const vocabularyAPI = {
+  async getByCustomer(customerId: string, options: any = {}) {
+    const params = createCleanParams({
+      customerId,
+      ...options,
+    })
+    return apiRequest(`/custom/vocabulary?${params.toString()}`)
+  },
+
+  async create(data: any) {
+    return apiRequest('/custom/vocabulary', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async update(id: string, data: any) {
+    return apiRequest('/custom/vocabulary', {
+      method: 'PUT',
+      body: JSON.stringify({ id, ...data }),
+    })
+  },
+
+  async delete(id: string) {
+    return apiRequest(`/custom/vocabulary?id=${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  async getStats(customerId: string) {
+    return apiRequest(`/custom/vocabulary/stats?customerId=${customerId}`)
+  },
+}
+
+// Translation History API
+export const translationHistoryAPI = {
+  async getByCustomer(customerId: string, options: any = {}) {
+    const params = createCleanParams({
+      customerId,
+      ...options,
+    })
+    return apiRequest(`/translation-history?${params.toString()}`)
+  },
+
+  async create(data: any) {
+    return apiRequest('/translation-history', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async update(id: string, data: any) {
+    return apiRequest(`/translation-history/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async delete(id: string) {
+    return apiRequest(`/translation-history/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  async getStats(customerId: string) {
+    return apiRequest(`/translation-history/stats?customerId=${customerId}`)
+  },
+}
+
+// Learning Goals API
+export const learningGoalsAPI = {
+  async getByCustomer(customerId: string, options: any = {}) {
+    const params = createCleanParams({
+      customerId,
+      ...options,
+    })
+    return apiRequest(`/learning-goals?${params.toString()}`)
+  },
+
+  async create(data: any) {
+    return apiRequest('/learning-goals', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async update(id: string, data: any) {
+    return apiRequest(`/learning-goals/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async updateProgress(id: string, current: number) {
+    return this.update(id, { current })
+  },
+}
+
+// User Preferences API
+export const userPreferencesAPI = {
+  async get(customerId: string) {
+    return apiRequest(`/user-preferences?customerId=${customerId}`)
+  },
+
+  async create(data: any) {
+    return apiRequest('/user-preferences', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async update(id: string, data: any) {
+    return apiRequest(`/user-preferences/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async upsert(customerId: string, data: any) {
+    return apiRequest('/user-preferences', {
+      method: 'PUT',
+      body: JSON.stringify({ customerId, data }),
+    })
+  },
+}
+
+// Achievements API
+export const achievementsAPI = {
+  async getAll() {
+    return apiRequest('/achievements')
+  },
+
+  async getUserAchievements(customerId: string) {
+    return apiRequest(`/user-achievements?customerId=${customerId}`)
+  },
+
+  async unlockAchievement(customerId: string, achievementId: string, progress = 100) {
+    return apiRequest('/user-achievements', {
+      method: 'POST',
+      body: JSON.stringify({
+        customerId,
+        achievementId,
+        progress,
+      }),
+    })
+  },
+}
+
+// Practice Sessions API
+export const practiceAPI = {
+  async getByCustomer(customerId: string, options: any = {}) {
+    const params = createCleanParams({
+      customerId,
+      ...options,
+    })
+    return apiRequest(`/practice-sessions?${params.toString()}`)
+  },
+
+  async create(data: any) {
+    return apiRequest('/practice-sessions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async update(id: string, data: any) {
+    return apiRequest(`/practice-sessions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async delete(id: string) {
+    return apiRequest(`/practice-sessions/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  async getStats(customerId: string) {
+    return apiRequest(`/practice-sessions/stats?customerId=${customerId}`)
+  },
+
+  async getWordsForPractice(customerId: string, options: any = {}) {
+    const params = createCleanParams({
+      customerId,
+      ...options,
+    })
+    return apiRequest(`/vocabulary/practice?${params.toString()}`)
+  },
+}
+
+// Helper function to get current customer ID
+export async function getCurrentCustomerId(): Promise<string | null> {
+  try {
+    const response = await apiRequest('/auth/me')
+    return response.user?.id || null
+  } catch (error) {
+    console.error('Error getting current customer:', error)
+    return null
+  }
 }

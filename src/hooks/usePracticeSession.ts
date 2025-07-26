@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { practiceAPI, vocabularyAPI } from '@/lib/api/payload'
+import { practiceAPI, vocabularyAPI } from '@/lib/api/client'
 import { Vocabulary } from '@/payload-types'
 
 export interface PracticeWord {
@@ -93,11 +93,11 @@ export function usePracticeSession() {
         status: config.status,
       })
 
-      if (!response.data?.docs || response.data.docs.length === 0) {
+      if (!response.docs || response.docs.length === 0) {
         throw new Error('No vocabulary words available for practice')
       }
 
-      const words: PracticeWord[] = response.data.docs.map((vocab: Vocabulary) => ({
+      const words: PracticeWord[] = response.docs.map((vocab: Vocabulary) => ({
         id: vocab.id,
         vocabulary: vocab,
         timeSpent: 0,
@@ -203,6 +203,7 @@ export function usePracticeSession() {
       const score = Math.round((session.correctAnswers / session.totalWords) * 100)
 
       // Prepare session data for saving
+      console.log('HEHEHEHE', session.words)
       const sessionData = {
         customer: customer.id,
         sessionType: session.sessionType,

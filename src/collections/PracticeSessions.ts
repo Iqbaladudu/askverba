@@ -138,6 +138,12 @@ export const PracticeSessions: CollectionConfig = {
     listSearchableFields: ['customer', 'sessionType'],
   },
   hooks: {
+    beforeChange: [
+      async ({ data, operation, req }) => {
+        console.log('BEFORE CHANGE', data)
+        return data
+      },
+    ],
     afterChange: [
       async ({ doc, operation, req }) => {
         // Update vocabulary practice statistics after session completion
@@ -146,10 +152,21 @@ export const PracticeSessions: CollectionConfig = {
 
           for (const wordResult of doc.words) {
             try {
+              // Extract vocabulary ID - handle both populated and non-populated cases
+              const vocabularyId =
+                typeof wordResult.vocabulary === 'string'
+                  ? wordResult.vocabulary
+                  : wordResult.vocabulary?.id || wordResult.vocabulary
+
+              if (!vocabularyId) {
+                console.warn('No vocabulary ID found for word result:', wordResult)
+                continue
+              }
+
               // Get current vocabulary item
               const vocabulary = await payload.findByID({
                 collection: 'vocabulary',
-                id: wordResult.vocabulary,
+                id: vocabularyId,
               })
 
               if (vocabulary) {
@@ -173,11 +190,11 @@ export const PracticeSessions: CollectionConfig = {
                 // Update vocabulary item
                 await payload.update({
                   collection: 'vocabulary',
-                  id: wordResult.vocabulary,
+                  id: vocabularyId,
                   data: {
                     practiceCount: newPracticeCount,
                     accuracy: newAccuracy,
-                    lastPracticed: new Date(),
+                    lastPracticed: new Date().toISOString(),
                   },
                 })
               }

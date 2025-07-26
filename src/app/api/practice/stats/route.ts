@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const difficulty = searchParams.get('difficulty') as 'easy' | 'medium' | 'hard'
 
     // Get practice statistics
-    const stats = await getPracticeStats(customer.id, period)
+    const stats = await getPracticeStats(customer.id)
 
     // Filter by session type if specified
     const filteredStats = stats

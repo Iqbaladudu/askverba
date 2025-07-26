@@ -231,7 +231,7 @@ Delete a translation from history.
 
 ### Vocabulary
 
-#### POST /api/vocabulary
+#### POST /api/custom/vocabulary
 
 Create a new vocabulary entry.
 
@@ -280,7 +280,7 @@ Create a new vocabulary entry.
 }
 ```
 
-#### GET /api/vocabulary
+#### GET /api/custom/vocabulary
 
 Get user's vocabulary with filtering and pagination.
 
@@ -318,7 +318,7 @@ Get user's vocabulary with filtering and pagination.
 }
 ```
 
-#### PUT /api/vocabulary
+#### PUT /api/custom/vocabulary
 
 Update a vocabulary entry.
 
@@ -344,7 +344,7 @@ Update a vocabulary entry.
 }
 ```
 
-#### DELETE /api/vocabulary
+#### DELETE /api/custom/vocabulary
 
 Delete a vocabulary entry.
 

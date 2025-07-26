@@ -8,15 +8,7 @@ export const Vocabulary: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
-      // Users can only read their own vocabulary
-      if (user?.collection === 'customers') {
-        return {
-          customer: {
-            equals: user.id,
-          },
-        }
-      }
-      return true // Admins can read all
+      return user?.collection === 'customers' || user?.collection === 'users'
     },
     create: ({ req: { user } }) => {
       return user?.collection === 'customers' || user?.collection === 'users'

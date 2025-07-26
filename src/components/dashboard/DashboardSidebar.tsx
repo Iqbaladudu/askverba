@@ -37,12 +37,6 @@ const navigationItems = [
     beta: true,
   },
   {
-    title: 'Analytics',
-    href: '/dashboard/analytics',
-    icon: BarChart3,
-    beta: true,
-  },
-  {
     title: 'History',
     href: '/dashboard/history',
     icon: History,
@@ -65,12 +59,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
   const pathname = usePathname()
 
   // Fetch real data from hooks
-  const {
-    vocabulary,
-    stats: vocabStats,
-    loading: vocabLoading,
-    error: vocabError,
-  } = useVocabulary({ limit: 3 })
+  const { stats: vocabStats, loading: vocabLoading, error: vocabError } = useVocabulary()
   const { progress, loading: progressLoading, error: progressError } = useUserProgress()
   const { stats: practiceStats, loading: practiceLoading, error: practiceError } = usePractice()
 
@@ -82,13 +71,13 @@ export function DashboardSidebar({ className }: SidebarProps) {
   const accuracy = practiceStats?.averageScore || progress?.averageAccuracy || 0
 
   // Get recent vocabulary items (last 3)
-  const recentWords = (vocabulary || [])
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3)
-    .map((word) => ({
-      word: word.word,
-      translation: word.translation,
-    }))
+  // const recentWords = (vocabulary || [])
+  //   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  //   .slice(0, 3)
+  //   .map((word) => ({
+  //     word: word.word,
+  //     translation: word.translation,
+  //   }))
 
   return (
     <aside

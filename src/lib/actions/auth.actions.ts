@@ -200,10 +200,12 @@ export async function getCurrentUser(): Promise<any | null> {
     const payload = await getPayload({ config })
 
     try {
+      // Create proper Headers object for PayloadCMS
+      const headers = new Headers()
+      headers.set('Authorization', `Bearer ${token}`)
+
       const me = await payload.auth({
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
       })
 
       if (me.user) {
@@ -230,10 +232,12 @@ export async function validateAuthToken(token: string): Promise<boolean> {
   try {
     const payload = await getPayload({ config })
 
+    // Create proper Headers object for PayloadCMS
+    const headers = new Headers()
+    headers.set('Authorization', `Bearer ${token}`)
+
     const result = await payload.auth({
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
     })
 
     return !!result.user
@@ -258,10 +262,12 @@ export async function refreshAuthToken(): Promise<AuthResult> {
     const payload = await getPayload({ config })
 
     // Validate current token and get user
+    // Create proper Headers object for PayloadCMS
+    const headers = new Headers()
+    headers.set('Authorization', `Bearer ${currentToken}`)
+
     const authResult = await payload.auth({
-      headers: {
-        Authorization: `Bearer ${currentToken}`,
-      },
+      headers,
     })
 
     if (!authResult.user) {

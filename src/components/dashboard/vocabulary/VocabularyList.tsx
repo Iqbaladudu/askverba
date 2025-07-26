@@ -30,7 +30,8 @@ interface VocabularyItem {
   difficulty: 'easy' | 'medium' | 'hard'
   status: 'new' | 'learning' | 'mastered'
   addedAt: string
-  lastPracticed: string
+  lastPracticed: string | null // Keep raw date for PracticeProgressBadge
+  lastPracticedFormatted: string // Formatted version for display
   practiceCount: number
   accuracy: number
   tags?:
@@ -44,8 +45,6 @@ interface VocabularyItem {
 export function VocabularyList() {
   const { vocabulary, loading, error, updateWord, deleteWord } = useVocabulary()
   const [practiceFilter, setPracticeFilter] = useState('all')
-
-  console.log(vocabulary)
 
   if (loading) {
     return (
@@ -94,7 +93,10 @@ export function VocabularyList() {
     difficulty: item.difficulty,
     status: item.status,
     addedAt: new Date(item.createdAt).toLocaleDateString(),
-    lastPracticed: item.lastPracticed ? formatTimeAgo(new Date(item.lastPracticed)) : 'Never',
+    lastPracticed: item.lastPracticed || null, // Keep raw date
+    lastPracticedFormatted: item.lastPracticed
+      ? formatTimeAgo(new Date(item.lastPracticed))
+      : 'Never',
     practiceCount: item.practiceCount || 0,
     accuracy: item.accuracy || 0,
     tags: item.tags || [],

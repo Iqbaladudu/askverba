@@ -11,7 +11,10 @@ export const UserProgress: CollectionConfig = {
       if (user?.collection === 'customers' || user?.collection === 'users') return true
       else return false
     },
-    create: ({ req: { user } }) => Boolean(user),
+    create: ({ req: { user } }) => {
+      if (user?.collection === 'customers' || user?.collection === 'users') return true
+      else return false
+    },
     update: ({ req: { user } }) => {
       if (user?.collection === 'customers' || user?.collection === 'users') return true
       else return false

@@ -54,7 +54,6 @@ const DASHBOARD_NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: Home },
   { label: 'Vocabulary', href: '/dashboard/vocabulary', icon: BookOpen },
   { label: 'History', href: '/dashboard/history', icon: History },
-  { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
 ]
 
 const Navbar: React.FC = () => {

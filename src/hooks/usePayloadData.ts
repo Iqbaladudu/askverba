@@ -8,7 +8,7 @@ import {
   learningGoalsAPI,
   userPreferencesAPI,
   achievementsAPI,
-} from '@/lib/api/payload'
+} from '@/lib/api/client'
 
 // User Progress Hook
 export function useUserProgress() {
