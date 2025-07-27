@@ -9,10 +9,9 @@ const vocabularyItemSchema = z.object({
   context: z.string(),
 })
 
-// Schema for simple translation with vocabulary extraction
+// Schema for simple translation (clean, no vocabulary)
 export const simpleTranslationSchema = z.object({
   translation: z.string(),
-  vocabulary: z.array(vocabularyItemSchema),
 })
 
 export type SimpleTranslationResult = z.infer<typeof simpleTranslationSchema>
@@ -28,7 +27,6 @@ const singleTermDataSchema = z.object({
   collocations: z.string(),
   comparisons: z.string(),
   usage_tips: z.string(),
-  vocabulary: z.array(vocabularyItemSchema), // Add vocabulary extraction
 })
 
 // Schema for paragraph data (more than 3 words)
@@ -41,7 +39,6 @@ const paragraphDataSchema = z.object({
   stylistic_notes: z.string(),
   alternative_translations: z.string(),
   learning_points: z.string(),
-  vocabulary: z.array(vocabularyItemSchema), // Add vocabulary extraction
 })
 
 // Discriminated union schema

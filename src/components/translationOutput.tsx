@@ -1,7 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { TranslationResult, TranslationMode } from '@/types/translator'
-import { SimpleTranslationResult, VocabularyItem } from '@/components/schema'
+import { SimpleTranslationResult } from '@/components/schema'
 import { SimpleOutput } from './simpleOutput'
 import { SimpleOutputWithVocabulary } from './SimpleOutputWithVocabulary'
 import { SingleTermOutput } from './singleTermOutput'
@@ -12,7 +12,6 @@ interface TranslationOutputProps {
   translationMode: TranslationMode
   expandedSections: string[]
   toggleSection: (id: string) => void
-  onSaveVocabulary?: (vocabulary: VocabularyItem[]) => Promise<void>
 }
 
 export const TranslationOutput: React.FC<TranslationOutputProps> = ({
@@ -20,7 +19,6 @@ export const TranslationOutput: React.FC<TranslationOutputProps> = ({
   translationMode,
   expandedSections,
   toggleSection,
-  onSaveVocabulary,
 }) => {
   if (!translationResult) {
     return null
@@ -32,7 +30,7 @@ export const TranslationOutput: React.FC<TranslationOutputProps> = ({
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="border-t border-neutral-200 dark:border-neutral-800"
+      className="overflow-hidden"
     >
       {/* Simple translation display */}
       {translationMode === 'simple' && typeof translationResult === 'string' && (
@@ -43,10 +41,7 @@ export const TranslationOutput: React.FC<TranslationOutputProps> = ({
       {translationMode === 'simple' &&
         typeof translationResult === 'object' &&
         'translation' in translationResult && (
-          <SimpleOutputWithVocabulary
-            result={translationResult as SimpleTranslationResult}
-            onSaveVocabulary={onSaveVocabulary}
-          />
+          <SimpleOutputWithVocabulary result={translationResult as SimpleTranslationResult} />
         )}
 
       {/* Detailed translation display - Single Term */}
@@ -59,7 +54,6 @@ export const TranslationOutput: React.FC<TranslationOutputProps> = ({
             data={translationResult.data}
             expandedSections={expandedSections}
             toggleSection={toggleSection}
-            onSaveVocabulary={onSaveVocabulary}
           />
         )}
 
@@ -68,9 +62,7 @@ export const TranslationOutput: React.FC<TranslationOutputProps> = ({
         typeof translationResult === 'object' &&
         translationResult !== null &&
         'type' in translationResult &&
-        translationResult.type === 'paragraph' && (
-          <ParagraphOutput data={translationResult.data} onSaveVocabulary={onSaveVocabulary} />
-        )}
+        translationResult.type === 'paragraph' && <ParagraphOutput data={translationResult.data} />}
     </motion.div>
   )
 }

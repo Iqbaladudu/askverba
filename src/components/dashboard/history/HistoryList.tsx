@@ -4,27 +4,10 @@ import React, { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Copy,
-  Star,
-  MoreHorizontal,
-  Clock,
-  Languages,
-  Volume2,
-  BookmarkPlus,
-  Trash2,
-  Edit,
-  Share,
-} from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Copy, Star, Clock, Languages, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslationHistory } from '@/hooks/usePayloadData'
-import { SeedDataButton } from './SeedDataButton'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface TranslationHistory {
   id: string
@@ -44,17 +27,59 @@ type SortType = 'newest' | 'oldest' | 'alphabetical' | 'length'
 
 interface HistoryListProps {
   filters?: {
-    search: string
-    filter: FilterType
-    sort: SortType
+    search?: string
   }
 }
 
 export function HistoryList({ filters }: HistoryListProps) {
-  const { history, loading, error, toggleFavorite, updateTranslation, deleteTranslation, refetch } =
-    useTranslationHistory({
-      limit: 20,
-    })
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [pageSize, setPageSize] = React.useState(20)
+
+  // Debounce search term
+  const debouncedSearch = useDebounce(filters?.search || '', 500)
+
+  // Simple API options
+  const apiOptions = React.useMemo(() => {
+    const options: any = {
+      page: currentPage,
+      limit: pageSize,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    }
+
+    if (debouncedSearch) {
+      options.search = debouncedSearch
+    }
+
+    return options
+  }, [currentPage, pageSize, debouncedSearch])
+
+  const {
+    history,
+    loading,
+    error,
+    pagination,
+    toggleFavorite,
+    updateTranslation,
+    deleteTranslation,
+    refetch,
+  } = useTranslationHistory(apiOptions)
+
+  // Reset to first page when search changes
+  React.useEffect(() => {
+    setCurrentPage(1)
+  }, [debouncedSearch])
+
+  // Handle page change
+  const handlePageChange = React.useCallback((page: number) => {
+    setCurrentPage(page)
+  }, [])
+
+  // Handle page size change
+  const handlePageSizeChange = React.useCallback((newPageSize: number) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1)
+  }, [])
 
   if (loading) {
     return (
@@ -99,7 +124,7 @@ export function HistoryList({ filters }: HistoryListProps) {
   }
 
   // Transform API data to match component interface
-  let historyItems: TranslationHistory[] = history.map((item: any) => ({
+  const historyItems: TranslationHistory[] = history.map((item: any) => ({
     id: item.id,
     originalText: item.originalText,
     translatedText: item.translatedText,
@@ -112,55 +137,7 @@ export function HistoryList({ filters }: HistoryListProps) {
     confidence: item.confidence || 95,
   }))
 
-  // Apply filters
-  if (filters) {
-    // Search filter
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
-      historyItems = historyItems.filter(
-        (item) =>
-          item.originalText.toLowerCase().includes(searchLower) ||
-          item.translatedText.toLowerCase().includes(searchLower),
-      )
-    }
-
-    // Category filter
-    if (filters.filter !== 'all') {
-      switch (filters.filter) {
-        case 'favorites':
-          historyItems = historyItems.filter((item) => item.isFavorite)
-          break
-        case 'recent':
-          const sevenDaysAgo = new Date()
-          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-          historyItems = historyItems.filter((item) => new Date(item.timestamp) >= sevenDaysAgo)
-          break
-        case 'long':
-          historyItems = historyItems.filter((item) => item.characterCount > 200)
-          break
-      }
-    }
-
-    // Sort
-    switch (filters.sort) {
-      case 'newest':
-        historyItems.sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-        )
-        break
-      case 'oldest':
-        historyItems.sort(
-          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-        )
-        break
-      case 'alphabetical':
-        historyItems.sort((a, b) => a.originalText.localeCompare(b.originalText))
-        break
-      case 'length':
-        historyItems.sort((a, b) => b.characterCount - a.characterCount)
-        break
-    }
-  }
+  // Note: Filtering and sorting are now handled server-side for better performance
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp)
@@ -190,14 +167,6 @@ export function HistoryList({ filters }: HistoryListProps) {
     }
   }
 
-  const handleSpeak = (text: string, language: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text)
-      utterance.lang = language === 'English' ? 'en-US' : 'id-ID'
-      speechSynthesis.speak(utterance)
-    }
-  }
-
   const handleDelete = async (id: string) => {
     try {
       await deleteTranslation(id)
@@ -207,20 +176,10 @@ export function HistoryList({ filters }: HistoryListProps) {
     }
   }
 
-  const handleSaveToVocabulary = (text: string) => {
-    toast.info('Saved to vocabulary!')
-  }
-
   const getModeColor = (mode: string) => {
     return mode === 'detailed'
       ? 'bg-purple-100 text-purple-700 border-purple-200'
       : 'bg-blue-100 text-blue-700 border-blue-200'
-  }
-
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 95) return 'text-green-600'
-    if (confidence >= 85) return 'text-yellow-600'
-    return 'text-red-600'
   }
 
   return (
@@ -245,7 +204,16 @@ export function HistoryList({ filters }: HistoryListProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleCopy(item.translatedText)}
+                    className="h-8 w-8 p-0 text-neutral-400 hover:text-neutral-600"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+
                   <Button
                     variant="ghost"
                     size="sm"
@@ -255,123 +223,38 @@ export function HistoryList({ filters }: HistoryListProps) {
                     <Star className={`h-4 w-4 ${item.isFavorite ? 'fill-current' : ''}`} />
                   </Button>
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleCopy(item.originalText + '\n' + item.translatedText)}
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy Both
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleSaveToVocabulary(item.originalText)}>
-                        <BookmarkPlus className="h-4 w-4 mr-2" />
-                        Save to Vocabulary
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Share className="h-4 w-4 mr-2" />
-                        Share
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Translation
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleDelete(item.id)}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(item.id)}
+                    className="h-8 w-8 p-0 text-neutral-400 hover:text-red-500"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
 
               {/* Translation Content */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="space-y-3">
                 {/* Original Text */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium text-neutral-700">
-                      Original ({item.sourceLanguage})
-                    </h4>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSpeak(item.originalText, item.sourceLanguage)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <Volume2 className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopy(item.originalText)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
+                <div>
+                  <h4 className="text-sm font-medium text-neutral-700 mb-2">
+                    Original ({item.sourceLanguage})
+                  </h4>
                   <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                     <p className="text-sm text-neutral-800">{item.originalText}</p>
                   </div>
                 </div>
 
                 {/* Translated Text */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium text-neutral-700">
-                      Translation ({item.targetLanguage})
-                    </h4>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSpeak(item.translatedText, item.targetLanguage)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <Volume2 className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopy(item.translatedText)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="p-3 bg-primary-50 rounded-lg border border-primary-200">
+                <div>
+                  <h4 className="text-sm font-medium text-neutral-700 mb-2">
+                    Translation ({item.targetLanguage})
+                  </h4>
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <p className="text-sm text-neutral-800">{item.translatedText}</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Footer Info */}
-              <div className="flex items-center justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-100">
-                <div className="flex items-center gap-4">
-                  <span>{item.characterCount} characters</span>
-                  <span className={`font-medium ${getConfidenceColor(item.confidence)}`}>
-                    {item.confidence}% confidence
-                  </span>
-                </div>
-
-                {/* <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" className="h-7 text-xs">
-                    Translate Again
-                  </Button>
-                  <Button size="sm" className="h-7 text-xs">
-                    Use as Template
-                  </Button>
-                </div> */}
               </div>
             </div>
           </CardContent>
@@ -392,10 +275,30 @@ export function HistoryList({ filters }: HistoryListProps) {
         </Card>
       )}
 
-      {/* Load More */}
-      {historyItems.length > 0 && (
-        <div className="text-center pt-4">
-          <Button variant="outline">Load More Translations</Button>
+      {/* Simple Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-neutral-600">
+            Page {pagination.page} of {pagination.totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={!pagination.hasPrevPage || loading}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={!pagination.hasNextPage || loading}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       )}
     </div>

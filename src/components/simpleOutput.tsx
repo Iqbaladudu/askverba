@@ -10,14 +10,14 @@ interface SimpleOutputProps {
 
 export const SimpleOutput: React.FC<SimpleOutputProps> = ({ translation }) => {
   return (
-    <div className="p-4 bg-neutral-50 dark:bg-neutral-900">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-md bg-primary-500/10">
-            <Languages className="h-4 w-4 text-primary-500" />
+    <div className="p-3 sm:p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-primary-500/10 flex-shrink-0">
+            <Languages className="h-5 w-5 text-primary-500" />
           </div>
-          <h4 className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-            Terjemahan Singkat
+          <h4 className="text-base sm:text-lg font-semibold text-neutral-800 dark:text-neutral-200">
+            Quick Translation
           </h4>
         </div>
         <OutputActions
@@ -27,7 +27,7 @@ export const SimpleOutput: React.FC<SimpleOutputProps> = ({ translation }) => {
           speakTooltip="Dengar terjemahan"
         />
       </div>
-      <div className="bg-white dark:bg-neutral-950 p-4 rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <div className="bg-white dark:bg-neutral-950 p-4 sm:p-6 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 shadow-sm">
         <p className="text-base leading-relaxed text-neutral-800 dark:text-neutral-200">
           <Markdown>{translation}</Markdown>
         </p>

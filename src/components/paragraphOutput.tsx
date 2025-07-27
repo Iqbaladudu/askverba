@@ -15,9 +15,7 @@ import {
   ClipboardCopy,
 } from 'lucide-react'
 import { OutputActions } from './outputActions'
-import { VocabularySection } from './VocabularySection'
 import { getCleanTitle, handleCopy } from '@/lib/utils'
-import { VocabularyItem } from '@/components/schema'
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
 import remarkMath from 'remark-math'
@@ -25,10 +23,9 @@ import 'katex/dist/katex.min.css' // `rehype-katex` does not import the CSS for 
 
 interface ParagraphOutputProps {
   data: ParagraphTranslation
-  onSaveVocabulary?: (vocabulary: VocabularyItem[]) => Promise<void>
 }
 
-export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data, onSaveVocabulary }) => {
+export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data }) => {
   const [copiedAll, setCopiedAll] = useState(false)
   const cleanTitle = getCleanTitle(data.title)
   const fullTranslationText = data.full_translation.replace(
@@ -72,44 +69,44 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data, onSaveVo
   )
 
   return (
-    <div className="p-4 bg-neutral-50 dark:bg-neutral-900">
+    <div className="p-3 sm:p-4">
       {/* Title section */}
       <div className="mb-6">
-        <div className="flex items-start justify-between">
-          <div className="max-w-[90%]">
-            <Badge
-              variant="outline"
-              className="mb-2 text-primary-500 border-primary-500/20 bg-primary-500/5"
-            >
-              English Text
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <Badge className="mb-3 text-primary-600 border-primary-500/30 bg-primary-500/10 font-medium px-3 py-1">
+              📝 Original Text
             </Badge>
-            <h2 className="text-base sm:text-lg font-bold line-clamp-2 text-neutral-800 dark:text-neutral-200">
+            <h2 className="text-lg sm:text-xl font-bold line-clamp-3 text-neutral-800 dark:text-neutral-200 leading-tight">
               {cleanTitle}
             </h2>
           </div>
-          <OutputActions
-            textToCopy={cleanTitle}
-            textToSpeak={cleanTitle}
-            speakLang="en-US"
-            copyTooltip="Salin teks asli"
-            speakTooltip="Dengar teks asli"
-          />
+          <div className="flex-shrink-0">
+            <OutputActions
+              textToCopy={cleanTitle}
+              textToSpeak={cleanTitle}
+              speakLang="en-US"
+              copyTooltip="Salin teks asli"
+              speakTooltip="Dengar teks asli"
+            />
+          </div>
         </div>
       </div>
 
       {/* Main translation highlighted card */}
-      <div className="bg-primary-500/5 p-4 rounded-lg border border-primary-500/20 mb-4">
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <h4 className="font-medium text-primary-500 mb-2">Terjemahan Utuh</h4>
-            {/* Use dangerouslySetInnerHTML to render the HTML string */}
-            <div className="text-neutral-800 dark:text-neutral-200">
+      <div className="bg-gradient-to-br from-primary-500/5 to-primary-600/5 p-4 sm:p-6 rounded-2xl border-2 border-primary-500/20 mb-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <h4 className="font-bold text-primary-600 mb-3 text-base sm:text-lg flex items-center gap-2">
+              ✨ Complete Translation
+            </h4>
+            <div className="text-neutral-800 dark:text-neutral-200 prose prose-sm sm:prose-base max-w-none">
               <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                 {fullTranslationText}
               </Markdown>
             </div>
           </div>
-          <div className="ml-2">
+          <div className="flex-shrink-0">
             <OutputActions
               textToCopy={fullTranslationText}
               textToSpeak={fullTranslationText}
@@ -203,17 +200,6 @@ export const ParagraphOutput: React.FC<ParagraphOutputProps> = ({ data, onSaveVo
           )}
         </TabsContent>
       </Tabs>
-
-      {/* Vocabulary Section */}
-      {data.vocabulary && data.vocabulary.length > 0 && (
-        <div className="mt-4">
-          <VocabularySection
-            vocabulary={data.vocabulary}
-            onSaveVocabulary={onSaveVocabulary}
-            title="📚 Vocabulary from Text"
-          />
-        </div>
-      )}
 
       {/* Action buttons */}
       <div className="flex justify-end mt-4">

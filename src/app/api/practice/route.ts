@@ -1,117 +1,96 @@
-/**
- * Practice sessions API route with Next.js best practices
- * Handles practice session CRUD operations with proper validation
- */
-
 import { NextRequest, NextResponse } from 'next/server'
-import { handleApiError, validateRequest, requireAuth } from '@/lib/api/error-handler'
-import { PracticeSessionCreateSchema, PracticeSessionQuerySchema } from '@/lib/api/validation'
-import { getAuthTokenFromCookies, getCustomerFromCookies } from '@/lib/server-cookies'
-import { 
-  createPracticeSession,
-  getUserPracticeSessions,
-  getPracticeStats
-} from '@/lib/services/practiceService'
+import { getCurrentUser } from '@/lib/actions/auth.actions'
+import { createPracticeSession } from '@/lib/services/practiceService'
+import { PracticeSessionCreateSchema } from '@/lib/api/validation'
 
-/**
- * Create new practice session
- */
 export async function POST(request: NextRequest) {
-  const requestId = crypto.randomUUID()
-  const startTime = Date.now()
-  
   try {
-    // Get authentication
-    const token = await getAuthTokenFromCookies()
-    const customer = await getCustomerFromCookies()
-    
-    requireAuth(token)
-    
-    if (!customer?.id) {
+    const user = await getCurrentUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    console.log('=== PRACTICE SESSION API ===')
+    console.log('User ID:', user.id)
+    console.log('Received practice session data:', JSON.stringify(body, null, 2))
+
+    // Validate request body
+    const validationResult = PracticeSessionCreateSchema.safeParse({
+      ...body,
+      customer: user.id,
+    })
+
+    if (!validationResult.success) {
+      console.error('Validation failed:', validationResult.error.errors)
       return NextResponse.json(
-        { error: 'Customer information required' },
-        { status: 401 }
+        {
+          error: 'Invalid request data',
+          details: validationResult.error.errors,
+        },
+        { status: 400 },
       )
     }
 
-    // Parse and validate request body
-    const body = await request.json()
-    const validatedData = validateRequest(PracticeSessionCreateSchema, {
-      ...body,
-      customer: customer.id,
-    })
+    const sessionData = validationResult.data
+    console.log('Validated session data:', JSON.stringify(sessionData, null, 2))
 
     // Create practice session
-    const session = await createPracticeSession(customer.id, validatedData as any)
+    const session = await createPracticeSession(user.id, {
+      sessionType: sessionData.sessionType,
+      words: sessionData.words,
+      score: sessionData.score,
+      timeSpent: sessionData.timeSpent,
+      difficulty: sessionData.difficulty,
+      metadata: sessionData.metadata,
+    })
 
-    const processingTime = Date.now() - startTime
+    console.log('Practice session created successfully:', session.id)
 
     return NextResponse.json({
       success: true,
-      data: session,
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-        processingTime,
-        sessionId: session.id,
-      }
+      session,
+      message: 'Practice session created successfully',
     })
-
   } catch (error) {
-    return handleApiError(error, request.url, requestId)
+    console.error('Error creating practice session:', error)
+    return NextResponse.json({ error: 'Failed to create practice session' }, { status: 500 })
   }
 }
 
-/**
- * Get user practice sessions with filtering
- */
 export async function GET(request: NextRequest) {
-  const requestId = crypto.randomUUID()
-  
   try {
-    // Get authentication
-    const token = await getAuthTokenFromCookies()
-    const customer = await getCustomerFromCookies()
-    
-    requireAuth(token)
-    
-    if (!customer?.id) {
-      return NextResponse.json(
-        { error: 'Customer information required' },
-        { status: 401 }
-      )
+    const user = await getCurrentUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Parse and validate query parameters
     const { searchParams } = new URL(request.url)
-    const queryParams = {
-      customerId: customer.id,
-      page: searchParams.get('page'),
-      limit: searchParams.get('limit'),
-      sessionType: searchParams.get('sessionType'),
-      difficulty: searchParams.get('difficulty'),
-      dateFrom: searchParams.get('dateFrom'),
-      dateTo: searchParams.get('dateTo'),
-      sortBy: searchParams.get('sortBy'),
-      sortOrder: searchParams.get('sortOrder'),
-    }
+    const limit = parseInt(searchParams.get('limit') || '20')
+    const page = parseInt(searchParams.get('page') || '1')
+    const sessionType = searchParams.get('sessionType')
 
-    const validatedQuery = validateRequest(PracticeSessionQuerySchema, queryParams)
+    // Get user's practice sessions
+    const { getUserPracticeSessions } = await import('@/lib/services/practiceService')
 
-    // Get practice sessions
-    const sessions = await getUserPracticeSessions(customer.id, validatedQuery as any)
+    const sessions = await getUserPracticeSessions(user.id, {
+      limit,
+      page,
+      sessionType: sessionType as
+        | 'flashcard'
+        | 'multiple_choice'
+        | 'fill_blanks'
+        | 'listening'
+        | 'mixed'
+        | undefined,
+    })
 
     return NextResponse.json({
       success: true,
-      data: sessions,
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-        query: validatedQuery,
-      }
+      ...sessions,
     })
-
   } catch (error) {
-    return handleApiError(error, request.url, requestId)
+    console.error('Error fetching practice sessions:', error)
+    return NextResponse.json({ error: 'Failed to fetch practice sessions' }, { status: 500 })
   }
 }

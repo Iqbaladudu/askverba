@@ -3,6 +3,8 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { PracticeSessions, Vocabulary } from '@/payload-types'
+import { checkPracticeAchievements } from './practiceAchievements'
+import { clearUserTranslationCache } from './translationService'
 
 export interface PracticeSessionData {
   sessionType: 'flashcard' | 'multiple_choice' | 'fill_blanks' | 'listening' | 'mixed'
@@ -47,6 +49,9 @@ export async function createPracticeSession(
   sessionData: PracticeSessionData,
 ): Promise<PracticeSessions> {
   try {
+    console.log('Creating practice session for user:', userId)
+    console.log('Session data:', JSON.stringify(sessionData, null, 2))
+
     const payload = await getPayload({ config })
 
     // Create the practice session
@@ -58,6 +63,8 @@ export async function createPracticeSession(
       },
     })
 
+    console.log('Practice session created with ID:', session.id)
+
     // Update vocabulary statistics for each word practiced
     for (const wordResult of sessionData.words) {
       await updateVocabularyStats(wordResult.vocabularyId, {
@@ -67,13 +74,104 @@ export async function createPracticeSession(
       })
     }
 
-    // Clear user cache to refresh data
-    await TranslationCache.clearUserCache(userId)
+    // Get user stats for achievement checking
+    const userStats = await getUserPracticeStats(userId)
 
-    return session
+    // Check for new achievements
+    const newAchievements = await checkPracticeAchievements(
+      userId,
+      {
+        sessionType: sessionData.sessionType,
+        score: sessionData.score,
+        timeSpent: sessionData.timeSpent,
+        totalWords: sessionData.metadata?.totalQuestions || 0,
+        correctAnswers: sessionData.metadata?.correctAnswers || 0,
+      },
+      userStats,
+    )
+
+    // Clear user cache to refresh data
+    await clearUserTranslationCache(userId)
+
+    return { ...session, newAchievements }
   } catch (error) {
     console.error('Failed to create practice session:', error)
     throw new Error('Failed to create practice session')
+  }
+}
+
+/**
+ * Get user practice statistics for achievement checking
+ */
+async function getUserPracticeStats(userId: string) {
+  try {
+    const payload = await getPayload({ config })
+
+    const sessions = await payload.find({
+      collection: 'practice-sessions',
+      where: {
+        customer: { equals: userId },
+      },
+      limit: 1000,
+      sort: '-createdAt',
+    })
+
+    const totalSessions = sessions.docs.length
+    const averageScore =
+      totalSessions > 0
+        ? Math.round(
+            sessions.docs.reduce((sum, session) => sum + (session.score || 0), 0) / totalSessions,
+          )
+        : 0
+
+    // Calculate current streak
+    const sessionDates = sessions.docs
+      .map((session) => new Date(session.createdAt).toDateString())
+      .filter((date, index, arr) => arr.indexOf(date) === index)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+
+    let currentStreak = 0
+    const today = new Date().toDateString()
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()
+
+    if (sessionDates.includes(today) || sessionDates.includes(yesterday)) {
+      let checkDate = new Date()
+      if (!sessionDates.includes(today)) {
+        checkDate.setDate(checkDate.getDate() - 1)
+      }
+
+      while (sessionDates.includes(checkDate.toDateString())) {
+        currentStreak++
+        checkDate.setDate(checkDate.getDate() - 1)
+      }
+    }
+
+    // Calculate session types
+    const sessionTypes = sessions.docs.reduce(
+      (acc, session) => {
+        const type = session.sessionType || 'unknown'
+        acc[type] = (acc[type] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+
+    return {
+      totalSessions,
+      averageScore,
+      currentStreak,
+      longestStreak: currentStreak, // Simplified - could calculate actual longest
+      sessionTypes,
+    }
+  } catch (error) {
+    console.error('Error getting user practice stats:', error)
+    return {
+      totalSessions: 0,
+      averageScore: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      sessionTypes: {},
+    }
   }
 }
 
@@ -273,7 +371,7 @@ export async function getUserPracticeSessions(
   options: {
     limit?: number
     page?: number
-    sessionType?: 'flashcard' | 'multiple_choice' | 'typing' | 'listening'
+    sessionType?: 'flashcard' | 'multiple_choice' | 'fill_blanks' | 'listening' | 'mixed'
   } = {},
 ): Promise<{
   docs: PracticeSessions[]
@@ -335,7 +433,7 @@ export async function deletePracticeSession(userId: string, sessionId: string): 
     })
 
     // Clear user cache to refresh data
-    await TranslationCache.clearUserCache(userId)
+    await clearUserTranslationCache(userId)
   } catch (error) {
     console.error('Failed to delete practice session:', error)
     throw new Error('Failed to delete practice session')

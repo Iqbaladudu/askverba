@@ -7,16 +7,17 @@ export function cn(...inputs: ClassValue[]) {
 
 export const formatContent = (content: string): string => {
   // 1. normalize literal “\n” sequences
-  const normalized = content.replace(/\\n/g, '\n')
+  let normalized = content.replace(/\\n/g, '\n')
   // 2. Replace bold markers
   const withBold = normalized.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
   // 3. Handle list items (lines starting with “- ”)
   const withLists = withBold.replace(/^- (.*)$/gm, '<li class="ml-5 pl-1 py-1">$1</li>')
   // 4. Replace newlines with <br/>
   const withBreaks = withLists.replace(/\n/g, '<br/>')
-  // wrap standalone <li> items
+  // 5. Wrap standalone <li> items in <ul>
   const html = withBreaks.includes('<li') ? `<ul>${withBreaks}</ul>` : withBreaks
-  return html // Return the HTML string
+
+  return html
 }
 
 // Get clean title without markdown formatting

@@ -8,7 +8,7 @@ import Navbar from '@/components/navbar'
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-primary-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/20">
       {/* Unified Navbar */}
       <Navbar />
 
@@ -18,8 +18,10 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
         <DashboardSidebar className="hidden lg:block" />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-6 pb-20 lg:pb-6">
-          <div className="max-w-7xl mx-auto">{children}</div>
+        <main className="flex-1 p-4 lg:p-8 pb-20 lg:pb-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="animate-in fade-in-0 duration-500">{children}</div>
+          </div>
         </main>
       </div>
 

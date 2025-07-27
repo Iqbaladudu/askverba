@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
-import { useVocabulary, useUserProgress, usePractice } from '@/hooks/usePayloadData'
+import { useVocabulary } from '@/hooks/usePayloadData'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function TestSidebarPage() {
@@ -14,9 +14,7 @@ export default function TestSidebarPage() {
     stats: vocabStats,
     loading: vocabLoading,
     error: vocabError,
-  } = useVocabulary({ limit: 10 })
-  const { progress, loading: progressLoading, error: progressError } = useUserProgress()
-  const { stats: practiceStats, loading: practiceLoading, error: practiceError } = usePractice()
+  } = useVocabulary()
 
   if (!customer) {
     return (

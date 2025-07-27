@@ -19,6 +19,7 @@ import {
   BookOpen,
   BarChart3,
   History,
+  Brain,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -53,6 +54,7 @@ const LANDING_NAV_ITEMS: NavItem[] = [
 const DASHBOARD_NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: Home },
   { label: 'Vocabulary', href: '/dashboard/vocabulary', icon: BookOpen },
+  { label: 'Practice', href: '/dashboard/practice', icon: Brain },
   { label: 'History', href: '/dashboard/history', icon: History },
 ]
 

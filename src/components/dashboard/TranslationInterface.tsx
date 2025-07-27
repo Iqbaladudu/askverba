@@ -5,25 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import {
-  Languages,
-  ArrowRight,
-  Volume2,
-  Copy,
-  BookmarkPlus,
-  Sparkles,
-  FileText,
-  Loader2,
-} from 'lucide-react'
+import { Languages, ArrowRight, Volume2, Copy, Sparkles, FileText, Loader2 } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { translateSimpleAction } from '@/features/translation/actions/translate-simple.action'
 import { translateDetailedAction } from '@/features/translation/actions/translate-detailed.action'
 import { TranslationResult, TranslationMode } from '@/types/translator'
-import { SimpleTranslationResult, VocabularyItem } from '@/components/schema'
-import { useTranslationHistory, useVocabulary } from '@/hooks/usePayloadData'
+import { SimpleTranslationResult } from '@/components/schema'
+import { useTranslationHistory } from '@/hooks/usePayloadData'
 import { useAuth } from '@/contexts/AuthContext'
 import { TranslationOutput } from '@/components/translationOutput'
+import { ImportantVocabulary } from '@/components/dashboard/ImportantVocabulary'
 
 export function TranslationInterface() {
   const [mode, setMode] = useState<TranslationMode>('simple')
@@ -42,7 +34,6 @@ export function TranslationInterface() {
 
   const { customer } = useAuth()
   const { createTranslation } = useTranslationHistory()
-  const { createWord } = useVocabulary()
 
   const handleTranslate = async () => {
     if (!inputText.trim()) {
@@ -112,78 +103,6 @@ export function TranslationInterface() {
     toast.success('Copied to clipboard!')
   }
 
-  const handleSaveToVocabulary = async () => {
-    if (!inputText.trim() || !translationResult || !customer) {
-      toast.error('Please translate text first')
-      return
-    }
-
-    try {
-      const translatedText =
-        typeof translationResult === 'string'
-          ? translationResult
-          : 'translation' in translationResult
-            ? translationResult.translation
-            : translationResult.type === 'single_term'
-              ? translationResult.data.main_translation
-              : translationResult.data.full_translation
-
-      // Extract first word for vocabulary (for single terms)
-      const word = inputText.trim().split(' ')[0].toLowerCase()
-
-      await createWord({
-        word: word,
-        translation: translatedText.split('.')[0], // Take first sentence
-        definition:
-          typeof translationResult === 'object' && translationResult.type === 'single_term'
-            ? translationResult.data.meanings
-            : '',
-        example:
-          typeof translationResult === 'object' && translationResult.type === 'single_term'
-            ? translationResult.data.examples
-            : inputText,
-        difficulty: 'medium',
-        status: 'new',
-        tags: ['dashboard'],
-        customer: customer.id,
-      })
-
-      toast.success('Added to vocabulary!')
-    } catch (error) {
-      console.error('Save vocabulary error:', error)
-      toast.error('Failed to save to vocabulary')
-    }
-  }
-
-  const handleSaveVocabularyItems = async (vocabularyItems: VocabularyItem[]) => {
-    if (!customer) {
-      toast.error('User not logged in')
-      return
-    }
-
-    console.log('Saving vocabulary items:', vocabularyItems)
-
-    try {
-      for (const item of vocabularyItems) {
-        await createWord({
-          word: item.word,
-          translation: item.translation,
-          definition: item.context, // Map context to definition
-          example: inputText, // Use original text as example
-          difficulty: item.difficulty,
-          status: 'new',
-          tags: [item.type, 'auto-extracted'], // Will be formatted by API
-          customer: customer.id,
-        })
-      }
-      toast.success(`Saved ${vocabularyItems.length} words to vocabulary!`)
-    } catch (error) {
-      console.error('Save vocabulary items error:', error)
-      toast.error('Failed to save vocabulary items')
-      throw error
-    }
-  }
-
   const handleSpeak = (text: string) => {
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text)
@@ -194,19 +113,21 @@ export function TranslationInterface() {
 
   return (
     <Card className="border-0 shadow-lg bg-white">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Languages className="h-6 w-6 text-primary-500" />
-            Translation Center
-          </CardTitle>
+      <CardHeader className="pb-6">
+        <div className="text-center space-y-4">
+          <div className="space-y-2">
+            <CardTitle className="text-2xl font-bold text-neutral-800">Translate Text</CardTitle>
+            <p className="text-neutral-600">
+              Get instant translations or detailed language analysis
+            </p>
+          </div>
 
-          {/* Mode Toggle */}
+          {/* Mode Toggle - Simplified */}
           <Tabs value={mode} onValueChange={(value) => setMode(value as TranslationMode)}>
-            <TabsList className="grid w-fit grid-cols-2">
+            <TabsList className="grid w-fit grid-cols-2 mx-auto">
               <TabsTrigger value="simple" className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
-                Simple
+                Quick
               </TabsTrigger>
               <TabsTrigger value="detailed" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
@@ -251,134 +172,126 @@ export function TranslationInterface() {
         </div>
 
         {/* Translation Interface */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
           {/* Input Section */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-neutral-700">Enter text</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleSpeak(inputText)}
-                disabled={!inputText}
-              >
-                <Volume2 className="h-4 w-4" />
-              </Button>
-            </div>
-            <Textarea
-              placeholder={
-                mode === 'simple'
-                  ? 'Type your text here for quick translation...'
-                  : 'Enter text for detailed contextual translation...'
-              }
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              className="min-h-[120px] resize-none border-neutral-200 focus:border-primary-300"
-            />
-            <div className="flex items-center justify-between text-xs text-neutral-500">
-              <span>{inputText.length} characters</span>
-              <span>Max 500 characters</span>
-            </div>
-          </div>
+          <div className="space-y-4">
+            <div className="relative">
+              <Textarea
+                placeholder={
+                  mode === 'simple'
+                    ? 'Type or paste text here for instant translation...'
+                    : 'Enter text for detailed analysis...'
+                }
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                className="min-h-[120px] resize-none border border-neutral-300 focus:border-primary-500 transition-colors rounded-lg p-4"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault()
+                    handleTranslate()
+                  }
+                }}
+              />
 
-          {/* Output Section */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-neutral-700">Translation</h3>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    const textToSpeak =
-                      typeof translationResult === 'string'
-                        ? translationResult
-                        : translationResult?.type === 'single_term'
-                          ? translationResult.data.main_translation
-                          : translationResult?.data.full_translation || ''
-                    handleSpeak(textToSpeak)
-                  }}
-                  disabled={!translationResult}
-                >
-                  <Volume2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCopy}
-                  disabled={!translationResult}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSaveToVocabulary}
-                  disabled={!translationResult}
-                >
-                  <BookmarkPlus className="h-4 w-4" />
-                </Button>
+              {/* Character count */}
+              <div className="absolute bottom-3 right-3 text-xs text-neutral-400">
+                {inputText.length}/500
               </div>
             </div>
-            <div
-              className={`min-h-[120px] p-3 rounded-lg border ${
-                translationResult
-                  ? 'bg-neutral-50 border-neutral-200'
-                  : 'bg-neutral-25 border-neutral-100'
-              }`}
-            >
-              {isTranslating ? (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
-                  <span className="ml-2 text-sm text-neutral-600">Translating...</span>
-                </div>
-              ) : translationResult ? (
-                <TranslationOutput
-                  translationResult={translationResult}
-                  translationMode={mode}
-                  expandedSections={expandedSections}
-                  toggleSection={toggleSection}
-                  onSaveVocabulary={handleSaveVocabularyItems}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-neutral-400 text-sm">
-                  Translation will appear here
-                </div>
-              )}
+
+            <div className="flex items-center justify-between text-xs text-neutral-500">
+              <span>Press Ctrl+Enter for quick translate</span>
             </div>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center justify-center gap-3 pt-4 border-t border-neutral-100">
-          <Button
-            onClick={handleTranslate}
-            disabled={!inputText.trim() || isTranslating}
-            className="px-8"
-          >
-            {isTranslating ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Translating...
-              </>
-            ) : (
-              <>
-                <Languages className="h-4 w-4 mr-2" />
-                Translate
-              </>
+          {/* Translate Button */}
+          <div className="flex justify-center gap-3">
+            <Button
+              onClick={handleTranslate}
+              disabled={!inputText.trim() || isTranslating}
+              className="bg-primary-600 hover:bg-primary-700 text-white"
+            >
+              {isTranslating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Translating...
+                </>
+              ) : (
+                <>
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  Translate
+                </>
+              )}
+            </Button>
+
+            {(inputText || translationResult) && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setInputText('')
+                  setTranslationResult(null)
+                }}
+                disabled={isTranslating}
+              >
+                Clear
+              </Button>
             )}
-          </Button>
+          </div>
 
-          <Button
-            variant="outline"
-            onClick={() => {
-              setInputText('')
-              setTranslationResult(null)
-            }}
-            disabled={isTranslating}
-          >
-            Clear
-          </Button>
+          {/* Output Section - Only show when there's a result or translating */}
+          {(translationResult || isTranslating) && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-neutral-800">Result</h3>
+                {translationResult && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const textToSpeak =
+                          typeof translationResult === 'string'
+                            ? translationResult
+                            : translationResult?.type === 'single_term'
+                              ? translationResult.data.main_translation
+                              : translationResult?.data.full_translation || ''
+                        handleSpeak(textToSpeak)
+                      }}
+                    >
+                      <Volume2 className="h-4 w-4 mr-1" />
+                      Listen
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleCopy}>
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4 min-h-[120px]">
+                {isTranslating ? (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
+                    <span className="ml-2 text-sm text-neutral-600">Translating...</span>
+                  </div>
+                ) : translationResult ? (
+                  <TranslationOutput
+                    translationResult={translationResult}
+                    translationMode={mode}
+                    expandedSections={expandedSections}
+                    toggleSection={toggleSection}
+                  />
+                ) : null}
+              </div>
+            </div>
+          )}
+
+          {/* Important Vocabulary Section */}
+          {inputText.trim() && (
+            <div className="mt-6 pt-6 border-t border-neutral-200">
+              <ImportantVocabulary inputText={inputText} />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

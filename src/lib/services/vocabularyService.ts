@@ -39,6 +39,24 @@ export interface VocabularyResponse {
  * Get user vocabulary with caching
  */
 export async function getUserVocabulary(userId: string): Promise<VocabularyResponse> {
+  return getUserVocabularyWithOptions(userId, {})
+}
+
+/**
+ * Get user vocabulary with options (pagination, search, filters)
+ */
+export async function getUserVocabularyWithOptions(
+  userId: string,
+  options: {
+    page?: number
+    limit?: number
+    search?: string
+    status?: string
+    difficulty?: string
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
+  } = {},
+): Promise<VocabularyResponse> {
   try {
     // Fetch from database
     const payload = await getPayload({ config })
@@ -50,10 +68,37 @@ export async function getUserVocabulary(userId: string): Promise<VocabularyRespo
       },
     }
 
+    // Add search filter
+    if (options.search) {
+      where.or = [
+        { word: { contains: options.search } },
+        { translation: { contains: options.search } },
+        { definition: { contains: options.search } },
+      ]
+    }
+
+    // Add status filter
+    if (options.status) {
+      where.status = { equals: options.status }
+    }
+
+    // Add difficulty filter
+    if (options.difficulty) {
+      where.difficulty = { equals: options.difficulty }
+    }
+
+    // Build sort string
+    const sortBy = options.sortBy || 'createdAt'
+    const sortOrder = options.sortOrder === 'asc' ? '' : '-'
+    const sort = `${sortOrder}${sortBy}`
+
     const response = await payload.find({
       collection: 'vocabulary',
       where,
       pagination: true,
+      page: options.page || 1,
+      limit: options.limit || 20,
+      sort,
     })
 
     return {
@@ -159,6 +204,12 @@ export async function createVocabularyEntry(
     return response
   } catch (error) {
     console.error('Failed to create vocabulary entry:', error)
+
+    // Pass through specific error messages from PayloadCMS hooks
+    if (error instanceof Error && error.message.includes('already exists')) {
+      throw error // Re-throw the specific duplicate error
+    }
+
     throw new Error('Failed to create vocabulary entry')
   }
 }

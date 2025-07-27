@@ -12,11 +12,10 @@ import { Media } from './collections/Media'
 import { Customers } from './collections/Customers'
 import { Vocabulary } from './collections/Vocabulary'
 import { TranslationHistory } from './collections/TranslationHistory'
-import { UserProgress } from './collections/UserProgress'
-import { LearningGoals } from './collections/LearningGoals'
-import { UserPreferences } from './collections/UserPreferences'
-import { Achievements, UserAchievements } from './collections/Achievements'
 import { PracticeSessions } from './collections/PracticeSessions'
+import { Achievements } from './collections/Achievements'
+import { UserAchievements } from './collections/UserAchievements'
+import { UserPreferences } from './collections/UserPreferences'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -34,12 +33,10 @@ export default buildConfig({
     Customers,
     Vocabulary,
     TranslationHistory,
-    UserProgress,
-    LearningGoals,
-    UserPreferences,
+    PracticeSessions,
     Achievements,
     UserAchievements,
-    PracticeSessions,
+    UserPreferences,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

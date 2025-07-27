@@ -7,13 +7,8 @@ import { MultipleChoicePractice } from './MultipleChoicePractice'
 import { FillBlanksPractice } from './FillBlanksPractice'
 import { ListeningPractice } from './ListeningPractice'
 import { Badge } from '@/components/ui/badge'
-import { 
-  BookOpen, 
-  MessageSquare, 
-  PenTool, 
-  Volume2,
-  Shuffle
-} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { BookOpen, MessageSquare, PenTool, Volume2, Shuffle, CheckCircle } from 'lucide-react'
 
 interface MixedPracticeProps {
   session: PracticeSession
@@ -54,12 +49,12 @@ const practiceTypeConfig = {
   },
 }
 
-export function MixedPractice({ 
-  session, 
-  onAnswer, 
-  onComplete, 
-  onPause, 
-  onResume 
+export function MixedPractice({
+  session,
+  onAnswer,
+  onComplete,
+  onPause,
+  onResume,
 }: MixedPracticeProps) {
   const [currentMode, setCurrentMode] = useState<PracticeMode>('flashcard')
   const [modeSequence, setModeSequence] = useState<PracticeMode[]>([])
@@ -133,14 +128,19 @@ export function MixedPractice({
             const ModeIcon = modeConfig.icon
             const isActive = index === session.currentIndex
             const isCompleted = index < session.currentIndex
-            
+
             return (
               <div
                 key={index}
                 className={`
                   flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200
-                  ${isActive ? `${modeConfig.bgColor} ${modeConfig.color} ring-2 ring-primary-300` : 
-                    isCompleted ? 'bg-green-100 text-green-600' : 'bg-neutral-100 text-neutral-400'}
+                  ${
+                    isActive
+                      ? `${modeConfig.bgColor} ${modeConfig.color} ring-2 ring-primary-300`
+                      : isCompleted
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-neutral-100 text-neutral-400'
+                  }
                 `}
                 title={`${index + 1}. ${modeConfig.name}`}
               >
@@ -157,18 +157,16 @@ export function MixedPractice({
       </div>
 
       {/* Current Practice Component */}
-      <div>
-        {renderCurrentPractice()}
-      </div>
+      <div>{renderCurrentPractice()}</div>
 
       {/* Mode Distribution Info */}
       <div className="text-center text-xs text-neutral-500">
         <div className="flex items-center justify-center gap-4 flex-wrap">
-          {practiceTypes.map(mode => {
-            const count = modeSequence.filter(m => m === mode).length
+          {practiceTypes.map((mode) => {
+            const count = modeSequence.filter((m) => m === mode).length
             const config = practiceTypeConfig[mode]
             const IconComponent = config.icon
-            
+
             return (
               <div key={mode} className="flex items-center gap-1">
                 <IconComponent className={`h-3 w-3 ${config.color}`} />
@@ -178,6 +176,28 @@ export function MixedPractice({
           })}
         </div>
       </div>
+
+      {/* Finish Quiz Button */}
+      {session.currentIndex > 0 && (
+        <div className="text-center pt-4">
+          <Button
+            onClick={() => {
+              const results = {
+                totalWords: session.totalWords,
+                correctAnswers: session.correctAnswers,
+                timeSpent: session.timeSpent,
+                accuracy: Math.round((session.correctAnswers / session.totalWords) * 100),
+              }
+              onComplete(results)
+            }}
+            variant="outline"
+            className="border-2 border-primary-300 text-primary-700 hover:bg-primary-50 hover:border-primary-400 px-6 py-3 font-semibold"
+          >
+            <CheckCircle className="h-5 w-5 mr-2" />
+            Finish Quiz & Save Progress
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

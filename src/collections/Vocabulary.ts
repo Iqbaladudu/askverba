@@ -140,5 +140,69 @@ export const Vocabulary: CollectionConfig = {
         return data
       },
     ],
+    beforeValidate: [
+      async ({ data, operation, req, originalDoc }) => {
+        // Ensure data exists
+        if (!data) {
+          return data
+        }
+
+        // Prevent duplicate vocabulary entries for the same customer
+        if (operation === 'create' || (operation === 'update' && data.word)) {
+          const payload = req.payload
+
+          // Normalize the word for comparison (lowercase, trim)
+          const normalizedWord = data.word?.toLowerCase().trim()
+
+          if (!normalizedWord || !data.customer) {
+            return data
+          }
+
+          // Build query to check for existing vocabulary
+          const baseQuery = {
+            customer: { equals: data.customer },
+            word: { equals: normalizedWord },
+            sourceLanguage: { equals: data.sourceLanguage || 'English' },
+            targetLanguage: { equals: data.targetLanguage || 'Indonesian' },
+          }
+
+          // For updates, exclude the current document
+          const whereQuery =
+            operation === 'update' && originalDoc?.id
+              ? {
+                  and: [baseQuery, { id: { not_equals: originalDoc.id } }],
+                }
+              : baseQuery
+
+          try {
+            const existingVocabulary = await payload.find({
+              collection: 'vocabulary',
+              where: whereQuery,
+              limit: 1,
+            })
+
+            if (existingVocabulary.docs.length > 0) {
+              const existing = existingVocabulary.docs[0]
+              throw new Error(
+                `Vocabulary "${data.word}" already exists for this language pair (${data.sourceLanguage || 'English'} → ${data.targetLanguage || 'Indonesian'}). ` +
+                  `Existing entry: "${existing.word}" → "${existing.translation}"`,
+              )
+            }
+
+            // Normalize the word in data for consistent storage
+            data.word = normalizedWord
+          } catch (error) {
+            // Re-throw validation errors
+            if (error instanceof Error && error.message.includes('already exists')) {
+              throw error
+            }
+            // Log other errors but don't block the operation
+            console.error('Error checking for duplicate vocabulary:', error)
+          }
+        }
+
+        return data
+      },
+    ],
   },
 }

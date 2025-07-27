@@ -2,19 +2,28 @@ import type { CollectionConfig } from 'payload'
 
 export const PracticeSessions: CollectionConfig = {
   slug: 'practice-sessions',
+  admin: {
+    useAsTitle: 'sessionType',
+    defaultColumns: ['sessionType', 'customer', 'score', 'timeSpent', 'createdAt'],
+  },
   access: {
     read: ({ req: { user } }) => {
-      if (user?.collection === 'customers' || user?.collection === 'users') return true
-      else return false
+      return user?.collection === 'customers' || user?.collection === 'users'
     },
-    create: ({ req: { user } }) => Boolean(user),
+    create: ({ req: { user } }) => {
+      return user?.collection === 'customers' || user?.collection === 'users'
+    },
     update: ({ req: { user } }) => {
-      if (user?.collection === 'customers' || user?.collection === 'users') return true
-      else return false
+      if (user?.collection === 'customers' || user?.collection === 'users') {
+        return true
+      }
+      return false
     },
     delete: ({ req: { user } }) => {
-      if (user?.collection === 'customers' || user?.collection === 'users') return true
-      else return false
+      if (user?.collection === 'customers' || user?.collection === 'users') {
+        return true
+      }
+      return false
     },
   },
   fields: [
@@ -23,37 +32,35 @@ export const PracticeSessions: CollectionConfig = {
       type: 'relationship',
       relationTo: 'customers',
       required: true,
-      index: true,
+      admin: {
+        position: 'sidebar',
+      },
     },
     {
       name: 'sessionType',
       type: 'select',
-      required: true,
       options: [
         { label: 'Flashcard', value: 'flashcard' },
         { label: 'Multiple Choice', value: 'multiple_choice' },
-        { label: 'Fill in Blanks', value: 'fill_blanks' },
+        { label: 'Fill Blanks', value: 'fill_blanks' },
         { label: 'Listening', value: 'listening' },
-        { label: 'Spelling', value: 'spelling' },
-        { label: 'Mixed Review', value: 'mixed' },
+        { label: 'Mixed', value: 'mixed' },
       ],
-      index: true,
+      required: true,
     },
     {
       name: 'words',
       type: 'array',
-      required: true,
       fields: [
         {
-          name: 'vocabulary',
-          type: 'relationship',
-          relationTo: 'vocabulary',
+          name: 'vocabularyId',
+          type: 'text',
           required: true,
         },
         {
           name: 'isCorrect',
           type: 'checkbox',
-          required: true,
+          defaultValue: false,
         },
         {
           name: 'timeSpent',
@@ -66,16 +73,10 @@ export const PracticeSessions: CollectionConfig = {
           type: 'number',
           required: true,
           min: 1,
-          defaultValue: 1,
         },
         {
           name: 'userAnswer',
           type: 'text',
-        },
-        {
-          name: 'correctAnswer',
-          type: 'text',
-          required: true,
         },
       ],
     },
@@ -85,18 +86,9 @@ export const PracticeSessions: CollectionConfig = {
       required: true,
       min: 0,
       max: 100,
-    },
-    {
-      name: 'totalWords',
-      type: 'number',
-      required: true,
-      min: 1,
-    },
-    {
-      name: 'correctWords',
-      type: 'number',
-      required: true,
-      min: 0,
+      admin: {
+        description: 'Score percentage (0-100)',
+      },
     },
     {
       name: 'timeSpent',
@@ -111,99 +103,38 @@ export const PracticeSessions: CollectionConfig = {
       name: 'difficulty',
       type: 'select',
       options: [
-        { label: 'Beginner', value: 'beginner' },
-        { label: 'Intermediate', value: 'intermediate' },
-        { label: 'Advanced', value: 'advanced' },
+        { label: 'Easy', value: 'easy' },
+        { label: 'Medium', value: 'medium' },
+        { label: 'Hard', value: 'hard' },
       ],
-      defaultValue: 'beginner',
-    },
-    {
-      name: 'completedAt',
-      type: 'date',
-      required: true,
-      defaultValue: () => new Date(),
+      defaultValue: 'medium',
     },
     {
       name: 'metadata',
-      type: 'json',
-      admin: {
-        description: 'Additional session metadata (settings, preferences, etc.)',
-      },
+      type: 'group',
+      fields: [
+        {
+          name: 'totalQuestions',
+          type: 'number',
+          min: 1,
+        },
+        {
+          name: 'correctAnswers',
+          type: 'number',
+          min: 0,
+        },
+        {
+          name: 'averageTimePerQuestion',
+          type: 'number',
+          min: 0,
+        },
+        {
+          name: 'streakCount',
+          type: 'number',
+          min: 0,
+          defaultValue: 0,
+        },
+      ],
     },
   ],
-  timestamps: true,
-  admin: {
-    useAsTitle: 'sessionType',
-    defaultColumns: ['customer', 'sessionType', 'score', 'totalWords', 'completedAt'],
-    listSearchableFields: ['customer', 'sessionType'],
-  },
-  hooks: {
-    beforeChange: [
-      async ({ data, operation, req }) => {
-        console.log('BEFORE CHANGE', data)
-        return data
-      },
-    ],
-    afterChange: [
-      async ({ doc, operation, req }) => {
-        // Update vocabulary practice statistics after session completion
-        if (operation === 'create' && doc.words) {
-          const payload = req.payload
-
-          for (const wordResult of doc.words) {
-            try {
-              // Extract vocabulary ID - handle both populated and non-populated cases
-              const vocabularyId =
-                typeof wordResult.vocabulary === 'string'
-                  ? wordResult.vocabulary
-                  : wordResult.vocabulary?.id || wordResult.vocabulary
-
-              if (!vocabularyId) {
-                console.warn('No vocabulary ID found for word result:', wordResult)
-                continue
-              }
-
-              // Get current vocabulary item
-              const vocabulary = await payload.findByID({
-                collection: 'vocabulary',
-                id: vocabularyId,
-              })
-
-              if (vocabulary) {
-                // Calculate new practice statistics
-                const currentPracticeCount = vocabulary.practiceCount || 0
-                const currentAccuracy = vocabulary.accuracy || 0
-                const newPracticeCount = currentPracticeCount + 1
-
-                // Calculate new accuracy (weighted average)
-                const newAccuracy =
-                  currentPracticeCount === 0
-                    ? wordResult.isCorrect
-                      ? 100
-                      : 0
-                    : Math.round(
-                        (currentAccuracy * currentPracticeCount +
-                          (wordResult.isCorrect ? 100 : 0)) /
-                          newPracticeCount,
-                      )
-
-                // Update vocabulary item
-                await payload.update({
-                  collection: 'vocabulary',
-                  id: vocabularyId,
-                  data: {
-                    practiceCount: newPracticeCount,
-                    accuracy: newAccuracy,
-                    lastPracticed: new Date().toISOString(),
-                  },
-                })
-              }
-            } catch (error) {
-              console.error('Error updating vocabulary practice stats:', error)
-            }
-          }
-        }
-      },
-    ],
-  },
 }

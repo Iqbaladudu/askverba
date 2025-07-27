@@ -4,66 +4,84 @@ export const Achievements: CollectionConfig = {
   slug: 'achievements',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'category', 'difficulty', 'isActive'],
+    defaultColumns: ['title', 'category', 'points', 'isActive'],
+  },
+  access: {
+    read: () => true,
+    create: ({ req: { user } }) => {
+      return user?.collection === 'users'
+    },
+    update: ({ req: { user } }) => {
+      return user?.collection === 'users'
+    },
+    delete: ({ req: { user } }) => {
+      return user?.collection === 'users'
+    },
   },
   fields: [
     {
       name: 'title',
       type: 'text',
       required: true,
-      label: 'Achievement Title',
     },
     {
       name: 'description',
       type: 'textarea',
       required: true,
-      label: 'Achievement Description',
+    },
+    {
+      name: 'icon',
+      type: 'text',
+      required: true,
+      admin: {
+        description: 'Emoji or icon identifier',
+      },
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      admin: {
+        description: 'Unique identifier for the achievement',
+      },
     },
     {
       name: 'category',
       type: 'select',
       options: [
-        { label: 'Vocabulary', value: 'vocabulary' },
+        { label: 'Practice', value: 'practice' },
         { label: 'Translation', value: 'translation' },
+        { label: 'Vocabulary', value: 'vocabulary' },
         { label: 'Streak', value: 'streak' },
-        { label: 'Study Time', value: 'study-time' },
-        { label: 'Accuracy', value: 'accuracy' },
-        { label: 'Goals', value: 'goals' },
-        { label: 'Special', value: 'special' },
+        { label: 'General', value: 'general' },
       ],
       required: true,
     },
     {
-      name: 'difficulty',
-      type: 'select',
-      options: [
-        { label: 'Bronze', value: 'bronze' },
-        { label: 'Silver', value: 'silver' },
-        { label: 'Gold', value: 'gold' },
-        { label: 'Platinum', value: 'platinum' },
-        { label: 'Diamond', value: 'diamond' },
-      ],
+      name: 'points',
+      type: 'number',
       required: true,
-    },
-    {
-      name: 'icon',
-      type: 'text',
-      label: 'Icon Name (Lucide)',
+      min: 0,
       admin: {
-        description: 'Lucide icon name for the achievement',
+        description: 'Points awarded for this achievement',
       },
     },
     {
-      name: 'badgeImage',
-      type: 'relationship',
-      relationTo: 'media',
-      label: 'Badge Image',
+      name: 'order',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        description: 'Display order (lower numbers appear first)',
+      },
     },
     {
-      name: 'color',
-      type: 'text',
-      label: 'Badge Color (Hex)',
-      defaultValue: '#FF5B9E',
+      name: 'isActive',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Whether this achievement is currently available',
+      },
     },
     {
       name: 'requirements',
@@ -73,142 +91,30 @@ export const Achievements: CollectionConfig = {
           name: 'type',
           type: 'select',
           options: [
-            { label: 'Words Learned', value: 'words_learned' },
-            { label: 'Translations Count', value: 'translations_count' },
+            { label: 'Practice Sessions', value: 'practice_sessions' },
+            { label: 'Translation Count', value: 'translation_count' },
+            { label: 'Vocabulary Count', value: 'vocabulary_count' },
             { label: 'Streak Days', value: 'streak_days' },
-            { label: 'Study Time Hours', value: 'study_time_hours' },
-            { label: 'Accuracy Percentage', value: 'accuracy_percentage' },
-            { label: 'Goals Completed', value: 'goals_completed' },
-            { label: 'Custom', value: 'custom' },
+            { label: 'Accuracy', value: 'accuracy' },
+            { label: 'Time Spent', value: 'time_spent' },
           ],
-          required: true,
         },
         {
-          name: 'target',
+          name: 'value',
           type: 'number',
-          required: true,
-          label: 'Target Value',
+          min: 0,
         },
         {
-          name: 'customCondition',
-          type: 'textarea',
-          label: 'Custom Condition (JSON)',
-          admin: {
-            condition: (data) => data.requirements?.type === 'custom',
-            description: 'JSON object describing custom achievement conditions',
-          },
+          name: 'condition',
+          type: 'select',
+          options: [
+            { label: 'Greater Than or Equal', value: 'gte' },
+            { label: 'Equal To', value: 'eq' },
+            { label: 'Less Than or Equal', value: 'lte' },
+          ],
+          defaultValue: 'gte',
         },
       ],
     },
-    {
-      name: 'rewards',
-      type: 'group',
-      fields: [
-        {
-          name: 'experiencePoints',
-          type: 'number',
-          defaultValue: 0,
-          label: 'XP Reward',
-        },
-        {
-          name: 'title',
-          type: 'text',
-          label: 'Title Reward',
-        },
-        {
-          name: 'specialFeature',
-          type: 'text',
-          label: 'Special Feature Unlock',
-        },
-      ],
-    },
-    {
-      name: 'isActive',
-      type: 'checkbox',
-      defaultValue: true,
-      label: 'Active Achievement',
-    },
-    {
-      name: 'isHidden',
-      type: 'checkbox',
-      defaultValue: false,
-      label: 'Hidden Achievement',
-      admin: {
-        description: 'Hidden achievements are not shown until unlocked',
-      },
-    },
-    {
-      name: 'order',
-      type: 'number',
-      defaultValue: 0,
-      label: 'Display Order',
-    },
   ],
-}
-
-// User Achievements (Junction table)
-export const UserAchievements: CollectionConfig = {
-  slug: 'user-achievements',
-  admin: {
-    useAsTitle: 'achievement',
-    defaultColumns: ['customer', 'achievement', 'unlockedAt'],
-  },
-  access: {
-    read: ({ req: { user } }) => {
-      if (user?.collection === 'customers' || user?.collection === 'users') return true
-      else return false
-    },
-    create: ({ req: { user } }) => Boolean(user),
-    update: ({ req: { user } }) => {
-      if (user?.collection === 'customers' || user?.collection === 'users') return true
-      else return false
-    },
-    delete: ({ req: { user } }) => {
-      if (user?.collection === 'customers' || user?.collection === 'users') return true
-      else return false
-    },
-  },
-  fields: [
-    {
-      name: 'customer',
-      type: 'relationship',
-      relationTo: 'customers',
-      required: true,
-    },
-    {
-      name: 'achievement',
-      type: 'relationship',
-      relationTo: 'achievements',
-      required: true,
-    },
-    {
-      name: 'unlockedAt',
-      type: 'date',
-      required: true,
-      defaultValue: () => new Date().toISOString(),
-    },
-    {
-      name: 'progress',
-      type: 'number',
-      defaultValue: 0,
-      label: 'Progress towards achievement',
-    },
-    {
-      name: 'isNotified',
-      type: 'checkbox',
-      defaultValue: false,
-      label: 'User has been notified',
-    },
-  ],
-  hooks: {
-    beforeChange: [
-      async ({ data, operation, req }) => {
-        // Auto-assign customer if creating from authenticated session
-        if (operation === 'create' && req.user?.collection === 'customers') {
-          data.customer = req.user.id
-        }
-        return data
-      },
-    ],
-  },
 }

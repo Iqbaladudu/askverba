@@ -150,6 +150,21 @@ export function handleApiError(
     }
   }
 
+  // Handle vocabulary duplicate errors
+  if (error instanceof Error && error.message.includes('already exists')) {
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: ErrorCode.VALIDATION_ERROR,
+        details: 'Duplicate vocabulary entry',
+        timestamp: new Date().toISOString(),
+        path,
+        requestId,
+      },
+      { status: 409 },
+    )
+  }
+
   // Handle network/timeout errors
   if (error instanceof Error) {
     if (error.name === 'AbortError' || error.message.includes('timeout')) {

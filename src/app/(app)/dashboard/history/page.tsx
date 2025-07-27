@@ -1,73 +1,34 @@
 'use client'
 
 import React, { useState } from 'react'
-import { HistoryHeader } from '@/components/dashboard/history/HistoryHeader'
-import { HistoryFilters } from '@/components/dashboard/history/HistoryFilters'
 import { HistoryList } from '@/components/dashboard/history/HistoryList'
-import { HistoryStats } from '@/components/dashboard/history/HistoryStats'
-
-type FilterType = 'all' | 'favorites' | 'recent' | 'long'
-type SortType = 'newest' | 'oldest' | 'alphabetical' | 'length'
 
 export default function HistoryPage() {
-  const [filters, setFilters] = useState({
-    search: '',
-    filter: 'all' as FilterType,
-    sort: 'newest' as SortType,
-  })
-  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
-  const [showFilters, setShowFilters] = useState(true)
-
-  const handleFiltersChange = (newFilters: {
-    search: string
-    filter: FilterType
-    sort: SortType
-    advanced?: any
-  }) => {
-    setFilters({
-      search: newFilters.search,
-      filter: newFilters.filter,
-      sort: newFilters.sort,
-    })
-  }
-
-  const handleAdvancedSearch = () => {
-    setShowAdvancedSearch(!showAdvancedSearch)
-    // TODO: Implement advanced search modal/panel
-    console.log('Advanced search toggled:', !showAdvancedSearch)
-  }
-
-  const handleToggleFilters = () => {
-    setShowFilters(!showFilters)
-  }
+  const [searchTerm, setSearchTerm] = useState('')
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <HistoryHeader
-        onAdvancedSearch={handleAdvancedSearch}
-        onToggleFilters={handleToggleFilters}
-      />
-
-      {/* Stats Overview */}
-      <HistoryStats />
-
-      {/* Filters and Search */}
-      {showFilters && <HistoryFilters onFiltersChange={handleFiltersChange} />}
-
-      {/* Advanced Search Panel */}
-      {showAdvancedSearch && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="font-semibold text-blue-800 mb-2">Advanced Search</h3>
-          <p className="text-blue-600 text-sm">
-            Advanced search functionality will be implemented here. Features: Date range, language
-            filter, text length, etc.
-          </p>
+      {/* Minimalist Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-800">Translation History</h1>
+          <p className="text-neutral-600">Your recent translations</p>
         </div>
-      )}
+      </div>
+
+      {/* Simple Search */}
+      <div className="max-w-md">
+        <input
+          type="text"
+          placeholder="Search translations..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
 
       {/* History List */}
-      <HistoryList filters={filters} />
+      <HistoryList filters={{ search: searchTerm }} />
     </div>
   )
 }

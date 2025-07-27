@@ -1,32 +1,36 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { practiceAPI, vocabularyAPI } from '@/lib/api/client'
+import { useState, useEffect, useCallback } from 'react'
 import { Vocabulary } from '@/payload-types'
+import { useVocabularyCache } from './useVocabularyCache'
 
 export interface PracticeWord {
-  id: string
   vocabulary: Vocabulary
+  correctAnswer: string
+  attempts: number
   isCorrect?: boolean
   timeSpent: number
-  attempts: number
   userAnswer?: string
-  correctAnswer: string
+  difficulty?: 'again' | 'hard' | 'good' | 'easy' // Anki-style difficulty
+  nextReview?: Date
 }
 
 export interface PracticeSession {
-  id?: string
-  sessionType: 'flashcard' | 'multiple_choice' | 'fill_blanks' | 'listening' | 'mixed'
   words: PracticeWord[]
   currentIndex: number
   totalWords: number
   correctAnswers: number
   timeSpent: number
-  startTime: Date
+  startTime: number
   isPaused: boolean
-  difficulty?: 'beginner' | 'intermediate' | 'advanced'
-  metadata?: any
+  isComplete: boolean
+  sessionType: 'flashcard' | 'multiple_choice' | 'fill_blanks' | 'listening' | 'mixed'
+  metadata?: {
+    includeDefinitions?: boolean
+    includeExamples?: boolean
+    timeLimit?: number
+    shuffleWords?: boolean
+  }
 }
 
 export interface PracticeConfig {
@@ -39,241 +43,272 @@ export interface PracticeConfig {
   timeLimit?: number
 }
 
+export interface PracticeResults {
+  totalWords: number
+  correctWords: number
+  timeSpent: number
+  accuracy: number
+  sessionType: string
+  wordsReviewed: Array<{
+    word: string
+    translation: string
+    isCorrect: boolean
+    difficulty: string
+    timeSpent: number
+  }>
+}
+
 export function usePracticeSession() {
-  const { customer } = useAuth()
   const [session, setSession] = useState<PracticeSession | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const { getVocabulary, preloadVocabulary } = useVocabularyCache()
 
-  // Start timer when session is active and not paused
-  useEffect(() => {
-    if (session && !session.isPaused) {
-      timerRef.current = setInterval(() => {
-        setSession((prev) =>
-          prev
-            ? {
-                ...prev,
-                timeSpent: prev.timeSpent + 1,
-              }
-            : null,
-        )
-      }, 1000)
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-    }
+  // Initialize practice session
+  const initializeSession = useCallback(
+    async (sessionType: PracticeSession['sessionType'], config: PracticeConfig) => {
+      setLoading(true)
+      setError(null)
 
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-      }
-    }
-  }, [session?.isPaused])
+      try {
+        // Use the new practice start API
+        const response = await fetch('/api/practice/start', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sessionType,
+            wordCount: config.wordCount,
+            difficulty: config.difficulty === 'all' ? undefined : config.difficulty,
+            status: config.status === 'all' ? undefined : config.status,
+            includeDefinitions: config.includeDefinitions,
+            includeExamples: config.includeExamples,
+            shuffleWords: config.shuffleWords,
+            timeLimit: config.timeLimit || undefined,
+          }),
+        })
 
-  const startSession = async (
-    sessionType: PracticeSession['sessionType'],
-    config: PracticeConfig,
-  ) => {
-    if (!customer?.id) {
-      setError('User not authenticated')
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      // Fetch vocabulary words for practice
-      const response = await practiceAPI.getWordsForPractice(customer.id, {
-        limit: config.wordCount,
-        difficulty: config.difficulty,
-        status: config.status,
-      })
-
-      if (!response.docs || response.docs.length === 0) {
-        throw new Error('No vocabulary words available for practice')
-      }
-
-      const words: PracticeWord[] = response.docs.map((vocab: Vocabulary) => ({
-        id: vocab.id,
-        vocabulary: vocab,
-        timeSpent: 0,
-        attempts: 0,
-        correctAnswer: vocab.translation,
-      }))
-
-      // Shuffle words if requested
-      if (config.shuffleWords) {
-        for (let i = words.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1))
-          ;[words[i], words[j]] = [words[j], words[i]]
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to start practice session')
         }
+
+        const data = await response.json()
+        const vocabularyWords: Vocabulary[] = data.words || []
+
+        if (vocabularyWords.length === 0) {
+          throw new Error('No vocabulary words found for practice')
+        }
+
+        // Convert to practice words
+        const practiceWords: PracticeWord[] = vocabularyWords.map((vocab) => ({
+          vocabulary: vocab,
+          correctAnswer: vocab.translation,
+          attempts: 0,
+          timeSpent: 0,
+        }))
+
+        // Create session
+        const newSession: PracticeSession = {
+          words: practiceWords,
+          currentIndex: 0,
+          totalWords: practiceWords.length,
+          correctAnswers: 0,
+          timeSpent: 0,
+          startTime: Date.now(),
+          isPaused: false,
+          isComplete: false,
+          sessionType,
+          metadata: data.config,
+        }
+
+        setSession(newSession)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to initialize practice session')
+      } finally {
+        setLoading(false)
       }
+    },
+    [],
+  )
 
-      const newSession: PracticeSession = {
-        sessionType,
-        words,
-        currentIndex: 0,
-        totalWords: words.length,
-        correctAnswers: 0,
-        timeSpent: 0,
-        startTime: new Date(),
-        isPaused: false,
-        difficulty:
-          config.difficulty === 'easy'
-            ? 'beginner'
-            : config.difficulty === 'hard'
-              ? 'advanced'
-              : 'intermediate',
-        metadata: {
-          config,
-          includeDefinitions: config.includeDefinitions,
-          includeExamples: config.includeExamples,
-          timeLimit: config.timeLimit,
-        },
-      }
+  // Submit answer for current word
+  const submitAnswer = useCallback(
+    (
+      userAnswer: string,
+      isCorrect: boolean,
+      timeSpent: number,
+      difficulty?: 'again' | 'hard' | 'good' | 'easy',
+    ): boolean => {
+      if (!session || session.isComplete) return false
 
-      setSession(newSession)
-    } catch (err) {
-      console.error('Error starting practice session:', err)
-      setError(err instanceof Error ? err.message : 'Failed to start practice session')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+      setSession((prevSession) => {
+        if (!prevSession) return null
 
-  const submitAnswer = (userAnswer: string, isCorrect: boolean, timeSpent: number = 0): boolean => {
-    if (!session) return false
+        const updatedWords = [...prevSession.words]
+        const currentWord = updatedWords[prevSession.currentIndex]
 
-    const updatedWords = [...session.words]
-    const currentWord = updatedWords[session.currentIndex]
+        // Update current word
+        currentWord.attempts += 1
+        currentWord.isCorrect = isCorrect
+        currentWord.timeSpent += timeSpent
+        currentWord.userAnswer = userAnswer
+        currentWord.difficulty = difficulty
 
-    if (currentWord) {
-      currentWord.isCorrect = isCorrect
-      currentWord.userAnswer = userAnswer
-      currentWord.timeSpent += timeSpent
-      currentWord.attempts += 1
-    }
+        // Calculate next review date for spaced repetition (Anki-style)
+        if (difficulty) {
+          const now = new Date()
+          let daysToAdd = 1
 
-    const newCorrectAnswers = session.correctAnswers + (isCorrect ? 1 : 0)
-    const newIndex = session.currentIndex + 1
+          switch (difficulty) {
+            case 'again':
+              daysToAdd = 1
+              break
+            case 'hard':
+              daysToAdd = 2
+              break
+            case 'good':
+              daysToAdd = 4
+              break
+            case 'easy':
+              daysToAdd = 7
+              break
+          }
 
-    setSession({
-      ...session,
-      words: updatedWords,
-      currentIndex: newIndex,
-      correctAnswers: newCorrectAnswers,
-    })
+          currentWord.nextReview = new Date(now.getTime() + daysToAdd * 24 * 60 * 60 * 1000)
+        }
 
-    // Check if session is complete
-    if (newIndex >= session.totalWords) {
-      // Session completed, will be handled by the component
-      return true
-    }
+        const newCorrectAnswers = prevSession.correctAnswers + (isCorrect ? 1 : 0)
+        const newTimeSpent = prevSession.timeSpent + timeSpent
+        const newCurrentIndex = prevSession.currentIndex + 1
+        const isComplete = newCurrentIndex >= prevSession.totalWords
 
-    return false
-  }
-
-  const pauseSession = () => {
-    if (session) {
-      setSession({
-        ...session,
-        isPaused: true,
+        return {
+          ...prevSession,
+          words: updatedWords,
+          currentIndex: newCurrentIndex,
+          correctAnswers: newCorrectAnswers,
+          timeSpent: newTimeSpent,
+          isComplete,
+        }
       })
-    }
-  }
 
-  const resumeSession = () => {
-    if (session) {
-      setSession({
-        ...session,
-        isPaused: false,
-      })
-    }
-  }
+      // Return true if session is complete
+      return session.currentIndex + 1 >= session.totalWords
+    },
+    [session],
+  )
 
-  const endSession = async (results?: any) => {
-    if (!session || !customer?.id) return
+  // Pause/Resume session
+  const pauseSession = useCallback(() => {
+    setSession((prev) => (prev ? { ...prev, isPaused: true } : null))
+  }, [])
+
+  const resumeSession = useCallback(() => {
+    setSession((prev) => (prev ? { ...prev, isPaused: false } : null))
+  }, [])
+
+  // Reset session
+  const resetSession = useCallback(() => {
+    setSession(null)
+    setError(null)
+  }, [])
+
+  // Get practice results
+  const getResults = useCallback((): PracticeResults | null => {
+    if (!session) return null
+
+    return {
+      totalWords: session.totalWords,
+      correctWords: session.correctAnswers,
+      timeSpent: session.timeSpent,
+      accuracy: Math.round((session.correctAnswers / session.totalWords) * 100),
+      sessionType: session.sessionType,
+      wordsReviewed: session.words.map((word) => ({
+        word: word.vocabulary.word,
+        translation: word.vocabulary.translation,
+        isCorrect: word.isCorrect || false,
+        difficulty: word.difficulty || 'good',
+        timeSpent: word.timeSpent,
+      })),
+    }
+  }, [session])
+
+  // Save session to database
+  const saveSession = useCallback(async () => {
+    if (!session) return
 
     try {
-      // Calculate final statistics
-      const score = Math.round((session.correctAnswers / session.totalWords) * 100)
+      // Mark session as complete if not already
+      const updatedSession = { ...session, isComplete: true }
 
-      // Prepare session data for saving
-      console.log('HEHEHEHE', session.words)
+      // Only include words that have been attempted (attempts > 0)
+      const attemptedWords = updatedSession.words.filter((word) => word.attempts > 0)
+
+      if (attemptedWords.length === 0) {
+        console.warn('No words attempted, skipping session save')
+        return
+      }
+
       const sessionData = {
-        customer: customer.id,
-        sessionType: session.sessionType,
-        words: session.words.map((word) => ({
-          vocabulary: word.vocabulary.id,
+        sessionType: updatedSession.sessionType,
+        words: attemptedWords.map((word) => ({
+          vocabularyId: word.vocabulary.id,
           isCorrect: word.isCorrect || false,
           timeSpent: word.timeSpent,
           attempts: word.attempts,
-          userAnswer: word.userAnswer || '',
-          correctAnswer: word.correctAnswer,
         })),
-        score,
-        totalWords: session.totalWords,
-        correctWords: session.correctAnswers,
-        timeSpent: session.timeSpent,
-        difficulty: session.difficulty,
-        completedAt: new Date().toISOString(),
-        metadata: session.metadata,
+        score: Math.round((updatedSession.correctAnswers / updatedSession.totalWords) * 100),
+        timeSpent: updatedSession.timeSpent,
+        difficulty: 'medium' as const, // Default difficulty
+        metadata: {
+          totalQuestions: updatedSession.totalWords,
+          correctAnswers: updatedSession.correctAnswers,
+          averageTimePerQuestion: Math.round(updatedSession.timeSpent / updatedSession.totalWords),
+          streakCount: 0, // Calculate streak if needed
+        },
       }
 
-      // Save session to database
-      await practiceAPI.create(sessionData)
+      console.log('Saving practice session:', sessionData)
 
-      // Update session with final results
-      setSession({
-        ...session,
-        id: 'completed', // Temporary ID to indicate completion
-        isPaused: true,
+      const response = await fetch('/api/practice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(sessionData),
       })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Failed to save practice session:', errorData)
+        throw new Error(errorData.error || 'Failed to save practice session')
+      }
+
+      const result = await response.json()
+      console.log('Practice session saved successfully:', result)
+
+      // Update session state to mark as complete
+      setSession(updatedSession)
+
+      return result
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save practice session')
+      console.error('Error saving practice session:', err)
+      throw err
     }
-  }
-
-  const resetSession = () => {
-    setSession(null)
-    setError(null)
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
-  }
-
-  const getCurrentWord = () => {
-    if (!session || session.currentIndex >= session.words.length) return null
-    return session.words[session.currentIndex]
-  }
-
-  const getProgress = () => {
-    if (!session) return 0
-    return (session.currentIndex / session.totalWords) * 100
-  }
-
-  const getAccuracy = () => {
-    if (!session || session.currentIndex === 0) return 0
-    return Math.round((session.correctAnswers / session.currentIndex) * 100)
-  }
+  }, [session])
 
   return {
     session,
-    isLoading,
+    loading,
     error,
-    startSession,
+    initializeSession,
     submitAnswer,
     pauseSession,
     resumeSession,
-    endSession,
     resetSession,
-    getCurrentWord,
-    getProgress,
-    getAccuracy,
+    getResults,
+    saveSession,
   }
 }

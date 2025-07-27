@@ -289,6 +289,28 @@ export function MultipleChoicePractice({
           <p>Select the correct translation and click Submit</p>
         </div>
       )}
+
+      {/* Finish Quiz Button */}
+      {session.currentIndex > 0 && (
+        <div className="text-center pt-4">
+          <Button
+            onClick={() => {
+              const results = {
+                totalWords: session.totalWords,
+                correctAnswers: session.correctAnswers,
+                timeSpent: session.timeSpent,
+                accuracy: Math.round((session.correctAnswers / session.totalWords) * 100),
+              }
+              onComplete(results)
+            }}
+            variant="outline"
+            className="border-2 border-primary-300 text-primary-700 hover:bg-primary-50 hover:border-primary-400 px-6 py-3 font-semibold"
+          >
+            <CheckCircle className="h-5 w-5 mr-2" />
+            Finish Quiz & Save Progress
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

@@ -110,7 +110,7 @@ async function saveTranslationToHistory({
         isFavorite: false,
         detailedResult: typeof result === 'object' ? result : null,
         processingTime,
-        aiModel: mode === 'simple' ? 'grok-3-mini-fast-latest' : 'mistral-large-2402',
+        aiModel: mode === 'simple' ? 'mistral-medium-2505' : 'magistral-medium-2507',
       },
     })
   } catch (error) {

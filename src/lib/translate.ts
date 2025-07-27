@@ -24,7 +24,7 @@ export const xai = createXai({
 export async function translateSimple(text: string): Promise<SimpleTranslationResult> {
   try {
     const result = await generateObject({
-      model: xai('grok-3-mini-fast-latest'),
+      model: mistral('mistral-small-2506'),
       schema: simpleTranslationSchema,
       system: SIMPLE_TRANSLATE_SYSTEM_PROMPT,
       prompt: text,
@@ -41,7 +41,7 @@ export async function translateDetailed(text: string): Promise<TranslationResult
   console.log(text)
   try {
     const result = await generateObject({
-      model: mistral('mistral-large-2402'),
+      model: mistral('mistral-small-2506'),
       schema: translationResultSchema,
       system: EN_ID_DETAILED_TRANSLATOR_PROMPT,
       prompt: text,

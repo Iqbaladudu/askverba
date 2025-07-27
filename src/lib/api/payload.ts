@@ -244,7 +244,21 @@ export const translationHistoryAPI = {
     try {
       const user = await getAuthenticatedUser()
       const payload = await getPayloadInstance()
-      const { limit = 50, page = 1, mode, isFavorite, search } = options
+      const {
+        limit = 50,
+        page = 1,
+        mode,
+        isFavorite,
+        search,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+        dateFrom,
+        dateTo,
+        sourceLanguage,
+        targetLanguage,
+        minCharacters,
+        maxCharacters,
+      } = options
 
       // Build where clause
       const where: any = {
@@ -262,15 +276,52 @@ export const translationHistoryAPI = {
       }
 
       if (search) {
-        where.originalText = { contains: search }
+        where.or = [
+          { originalText: { contains: search } },
+          { translatedText: { contains: search } },
+        ]
       }
+
+      // Date range filtering
+      if (dateFrom || dateTo) {
+        where.createdAt = {}
+        if (dateFrom) {
+          where.createdAt.greater_than_equal = dateFrom
+        }
+        if (dateTo) {
+          where.createdAt.less_than_equal = dateTo
+        }
+      }
+
+      // Language filtering
+      if (sourceLanguage) {
+        where.sourceLanguage = { equals: sourceLanguage }
+      }
+
+      if (targetLanguage) {
+        where.targetLanguage = { equals: targetLanguage }
+      }
+
+      // Character count filtering
+      if (minCharacters || maxCharacters) {
+        where.characterCount = {}
+        if (minCharacters) {
+          where.characterCount.greater_than_equal = minCharacters
+        }
+        if (maxCharacters) {
+          where.characterCount.less_than_equal = maxCharacters
+        }
+      }
+
+      // Build sort string
+      const sortString = `${sortOrder === 'asc' ? '' : '-'}${sortBy}`
 
       const result = await payload.find({
         collection: 'translation-history',
         where,
         limit,
         page,
-        sort: '-createdAt',
+        sort: sortString,
         user,
       })
 
@@ -668,7 +719,19 @@ export const practiceAPI = {
       return result as PayloadResponse<PracticeSession>
     } catch (error) {
       console.error('Error getting practice sessions:', error)
-      throw new Error('Failed to get practice sessions')
+      // Return empty result instead of throwing error for new users
+      return {
+        docs: [],
+        totalDocs: 0,
+        limit: limit || 10,
+        totalPages: 0,
+        page: page || 1,
+        pagingCounter: 1,
+        hasPrevPage: false,
+        hasNextPage: false,
+        prevPage: null,
+        nextPage: null,
+      } as PayloadResponse<PracticeSession>
     }
   },
 
@@ -796,7 +859,15 @@ export const practiceAPI = {
       }
     } catch (error) {
       console.error('Error getting practice stats:', error)
-      throw new Error('Failed to get practice stats')
+      // Return default stats for new users
+      return {
+        totalSessions: 0,
+        totalTimeSpent: 0,
+        averageScore: 0,
+        currentStreak: 0,
+        sessionTypes: {},
+        recentSessions: [],
+      }
     }
   },
 
