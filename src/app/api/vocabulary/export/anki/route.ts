@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/actions/auth.actions'
-import { getUserVocabulary } from '@/lib/services/vocabularyService'
-import { createExportPackage, AnkiExportOptions } from '@/lib/services/ankiExportService'
+import { getCurrentUser } from '@/features/auth/actions'
+import { getUserVocabulary } from '@/features/vocabulary'
+import {
+  createExportPackage,
+  AnkiExportOptions,
+} from '@/features/vocabulary/services/ankiExportService'
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/actions/auth.actions'
-import { getWordsForPractice } from '@/lib/services/vocabularyService'
+import { getCurrentUser } from '@/features/auth/actions'
+import { getWordsForPractice } from '@/features/vocabulary'
 import { z } from 'zod'
 
 const StartPracticeSchema = z.object({

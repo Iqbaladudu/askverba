@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { translationHistoryAPI } from '@/lib/api/payload'
-import { getCurrentUser } from '@/lib/actions/auth.actions'
+import { translationHistoryAPI } from '@/infrastructure/api/payload'
+import { getCurrentUser } from '@/features/auth/actions'
 
 export async function GET(request: NextRequest) {
   try {

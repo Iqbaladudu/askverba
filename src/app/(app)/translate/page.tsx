@@ -1,12 +1,12 @@
-import Navbar from '@/components/navbar'
-import IntegratedTranslator from '@/components/translator'
+import { Navbar } from '@/components/organisms'
+import Translator from '@/features/translation/components/translator'
 
 export default function Page() {
   return (
     <>
       <Navbar />
       <main>
-        <IntegratedTranslator />
+        <Translator />
       </main>
     </>
   )

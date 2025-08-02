@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { VocabularyHeader } from '@/components/dashboard/vocabulary/VocabularyHeader'
-import { VocabularyList } from '@/components/dashboard/vocabulary/VocabularyList'
+import { VocabularyHeader } from '@/features/dashboard/components/vocabulary/VocabularyHeader'
+import { VocabularyList } from '@/features/dashboard/components/vocabulary/VocabularyList'
 
 export default function VocabularyPage() {
   return (

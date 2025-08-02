@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createVocabularyEntry } from '@/lib/services/vocabularyService'
+import { createVocabularyEntry } from '@/features/vocabulary'
 
 export async function POST(request: NextRequest) {
   try {

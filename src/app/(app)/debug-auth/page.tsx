@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/features/auth/contexts'
 import { getAuthTokenFromDocument, getCustomerFromDocument } from '@/lib/auth-cookies'
 
 export default function DebugAuthPage() {

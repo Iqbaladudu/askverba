@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import config from '@/payload.config'
-import Navbar from '@/components/navbar'
+import { Navbar } from '@/components/organisms'
 import {
   HeroSection,
   HowItWorksSection,

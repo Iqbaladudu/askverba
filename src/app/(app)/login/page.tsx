@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { LoginForm } from '@/components/auth/LoginForm'
+import { LoginForm } from '@/features/auth/components/LoginForm'
 import Link from 'next/link'
-import { withGuestOnly } from '@/components/auth/withAuth'
+import { withGuestOnly } from '@/features/auth/components/withAuth'
 
 function LoginPage() {
   return (

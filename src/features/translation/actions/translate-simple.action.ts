@@ -5,11 +5,11 @@
 
 'use server'
 
-import { translateWithCache } from '@/lib/services/translationService'
-import { SimpleTranslationResult } from '@/components/schema'
-import { handleServerActionError, validateRequest } from '@/lib/api/error-handler'
-import { TranslationRequestSchema } from '@/lib/api/validation'
-import { getCurrentUser } from '@/lib/actions/auth.actions'
+import { translateWithCache } from '@/features/translation'
+import { SimpleTranslationResult } from '@/core/schema'
+import { handleServerActionError, validateRequest } from '@/infrastructure/api/error-handler'
+import { TranslationRequestSchema } from '@/infrastructure/api/validation'
+import { getCurrentUser } from '@/features/auth/actions'
 
 // Types
 interface TranslationResponse<T = unknown> {

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/contexts/AuthContext'
-import { useVocabulary } from '@/hooks/usePayloadData'
+import { useAuth } from '@/features/auth/contexts'
+import { useVocabulary } from '@/shared/hooks'
 import { toast } from 'sonner'
 
 export default function DebugVocabularyPage() {

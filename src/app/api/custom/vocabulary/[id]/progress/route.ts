@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/actions/auth.actions'
-import { updateVocabularyStats } from '@/lib/services/vocabularyService'
+import { getCurrentUser } from '@/features/auth/actions'
+import { updateVocabularyEntry } from '@/features/vocabulary/services/vocabularyService'
 import { z } from 'zod'
 
 const ProgressUpdateSchema = z.object({
@@ -10,10 +10,7 @@ const ProgressUpdateSchema = z.object({
   practiceDate: z.string().datetime(),
 })
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await getCurrentUser()
     if (!user) {
@@ -26,26 +23,26 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    
+
     // Validate request body
     const validationResult = ProgressUpdateSchema.safeParse(body)
     if (!validationResult.success) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid request data',
-          details: validationResult.error.errors 
+          details: validationResult.error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     const { isCorrect, attempts, timeSpent, practiceDate } = validationResult.data
 
     // Update vocabulary statistics
-    await updateVocabularyStats(vocabularyId, {
-      isCorrect,
-      timeSpent,
-      attempts,
+    await updateVocabularyEntry(user.id, vocabularyId, {
+      practiceCount: attempts,
+      lastPracticed: new Date().toISOString(),
+      status: calculateVocabularyStatus(isCorrect, attempts),
     })
 
     // Calculate new status based on performance
@@ -56,31 +53,30 @@ export async function PATCH(
       message: 'Vocabulary progress updated successfully',
       newStatus,
     })
-
   } catch (error) {
     console.error('Error updating vocabulary progress:', error)
-    return NextResponse.json(
-      { error: 'Failed to update vocabulary progress' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to update vocabulary progress' }, { status: 500 })
   }
 }
 
-function calculateVocabularyStatus(isCorrect: boolean, attempts: number): 'new' | 'learning' | 'mastered' {
+function calculateVocabularyStatus(
+  isCorrect: boolean,
+  attempts: number,
+): 'new' | 'learning' | 'mastered' {
   // Simple algorithm for status calculation
   // This can be enhanced with more sophisticated spaced repetition logic
-  
+
   if (attempts === 1) {
     return isCorrect ? 'learning' : 'new'
   }
-  
+
   if (attempts >= 3 && isCorrect) {
     return 'mastered'
   }
-  
+
   if (isCorrect) {
     return 'learning'
   }
-  
+
   return 'new'
 }

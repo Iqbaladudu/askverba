@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { practiceAPI } from '@/lib/api/payload'
-import { getCurrentUser } from '@/lib/actions/auth.actions'
+import { practiceAPI } from '@/infrastructure/api/payload'
+import { getCurrentUser } from '@/features/auth/actions'
 
 export async function GET(request: NextRequest) {
   try {

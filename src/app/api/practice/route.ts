@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/actions/auth.actions'
-import { createPracticeSession } from '@/lib/services/practiceService'
-import { PracticeSessionCreateSchema } from '@/lib/api/validation'
+import { getCurrentUser } from '@/features/auth/actions'
+import { createPracticeSession } from '@/features/practice'
+import { PracticeSessionCreateSchema } from '@/infrastructure/api/validation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     const sessionType = searchParams.get('sessionType')
 
     // Get user's practice sessions
-    const { getUserPracticeSessions } = await import('@/lib/services/practiceService')
+    const { getUserPracticeSessions } = await import('@/features/practice/services/practiceService')
 
     const sessions = await getUserPracticeSessions(user.id, {
       limit,

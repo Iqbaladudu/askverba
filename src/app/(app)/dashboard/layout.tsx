@@ -1,10 +1,10 @@
 'use client'
 
 import React from 'react'
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
-import { MobileNavigation } from '@/components/dashboard/MobileNavigation'
-import { withRequiredAuth } from '@/components/auth/withAuth'
-import Navbar from '@/components/navbar'
+import { DashboardSidebar } from '@/features/dashboard/components/DashboardSidebar'
+import { MobileNavigation } from '@/features/dashboard/components/MobileNavigation'
+import { withRequiredAuth } from '@/features/auth/components/withAuth'
+import { Navbar } from '@/components/organisms'
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (

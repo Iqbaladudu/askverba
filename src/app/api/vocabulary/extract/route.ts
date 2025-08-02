@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { generateObject } from 'ai'
 import { xai } from '@ai-sdk/xai'
-import { validateRequest } from '@/lib/api/error-handler'
+import { validateRequest } from '@/infrastructure/api/error-handler'
 
 // Schema for vocabulary extraction request
 const VocabularyExtractionSchema = z.object({

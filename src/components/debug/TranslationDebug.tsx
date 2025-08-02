@@ -1,7 +1,7 @@
 'use client'
 
-import { useAuth } from '@/contexts/AuthContext'
-import { useTranslationHistory } from '@/hooks/usePayloadData'
+import { useAuth } from '@/features/auth/contexts'
+import { useTranslationHistory } from '@/shared/hooks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function TranslationDebug() {

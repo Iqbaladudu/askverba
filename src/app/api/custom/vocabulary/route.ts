@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload, type Where } from 'payload'
 import config from '@payload-config'
-import { handleApiError, validateRequest, requireAuth } from '@/lib/api/error-handler'
+import { handleApiError, validateRequest, requireAuth } from '@/infrastructure/api/error-handler'
 import {
   VocabularyCreateSchema,
   VocabularyQuerySchema,
   VocabularyUpdateSchema,
-} from '@/lib/api/validation'
+} from '@/infrastructure/api/validation'
 import { getAuthTokenFromCookies, getCustomerFromCookies } from '@/lib/server-cookies'
 import { z } from 'zod'
 

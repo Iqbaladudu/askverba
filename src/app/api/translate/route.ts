@@ -4,10 +4,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { handleApiError, validateRequest, requireAuth } from '@/lib/api/error-handler'
-import { TranslationRequestSchema } from '@/lib/api/validation'
+import { handleApiError, validateRequest, requireAuth } from '@/infrastructure/api/error-handler'
+import { TranslationRequestSchema } from '@/infrastructure/api/validation'
 import { getAuthTokenFromCookies, getCustomerFromCookies } from '@/lib/server-cookies'
-import { translateWithCache } from '@/lib/services/translationService'
+import { translateWithCache } from '@/features/translation'
 
 /**
  * Translate text with caching and history saving
@@ -15,7 +15,7 @@ import { translateWithCache } from '@/lib/services/translationService'
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID()
   const startTime = Date.now()
-  
+
   try {
     // Get authentication (optional for translation)
     const token = await getAuthTokenFromCookies()
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       if (!userId) {
         return NextResponse.json(
           { error: 'Authentication required to save translation history' },
-          { status: 401 }
+          { status: 401 },
         )
       }
     }
@@ -65,9 +65,8 @@ export async function POST(request: NextRequest) {
         totalProcessingTime: processingTime,
         mode: (validatedData as any).mode,
         cached: response.fromCache,
-      }
+      },
     })
-
   } catch (error) {
     return handleApiError(error, request.url, requestId)
   }
@@ -78,19 +77,16 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   const requestId = crypto.randomUUID()
-  
+
   try {
     // Get authentication
     const token = await getAuthTokenFromCookies()
     const customer = await getCustomerFromCookies()
-    
+
     requireAuth(token)
-    
+
     if (!customer?.id) {
-      return NextResponse.json(
-        { error: 'Customer information required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Customer information required' }, { status: 401 })
     }
 
     // Parse query parameters
@@ -103,8 +99,10 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get('dateTo')
 
     // Import translation history service
-    const { getTranslationHistory } = await import('@/lib/services/translationService')
-    
+    const { getTranslationHistory } = await import(
+      '@/features/translation/services/translationService'
+    )
+
     // Get translation history
     const history = await getTranslationHistory(customer.id, {
       page,
@@ -128,10 +126,9 @@ export async function GET(request: NextRequest) {
           search,
           dateFrom,
           dateTo,
-        }
-      }
+        },
+      },
     })
-
   } catch (error) {
     return handleApiError(error, request.url, requestId)
   }
@@ -142,35 +139,31 @@ export async function GET(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   const requestId = crypto.randomUUID()
-  
+
   try {
     // Get authentication
     const token = await getAuthTokenFromCookies()
     const customer = await getCustomerFromCookies()
-    
+
     requireAuth(token)
-    
+
     if (!customer?.id) {
-      return NextResponse.json(
-        { error: 'Customer information required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Customer information required' }, { status: 401 })
     }
 
     // Get translation ID from query params
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
-    
+
     if (!id) {
-      return NextResponse.json(
-        { error: 'Translation ID is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Translation ID is required' }, { status: 400 })
     }
 
     // Import translation service
-    const { deleteTranslationHistory } = await import('@/lib/services/translationService')
-    
+    const { deleteTranslationHistory } = await import(
+      '@/features/translation/services/translationService'
+    )
+
     // Delete translation history entry
     await deleteTranslationHistory(id, customer.id)
 
@@ -180,9 +173,8 @@ export async function DELETE(request: NextRequest) {
       meta: {
         requestId,
         timestamp: new Date().toISOString(),
-      }
+      },
     })
-
   } catch (error) {
     return handleApiError(error, request.url, requestId)
   }

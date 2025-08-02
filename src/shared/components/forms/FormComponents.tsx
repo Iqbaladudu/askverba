@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { useFormContext, Controller, FieldPath, FieldValues } from 'react-hook-form'
-import { cn } from '@/lib/utils'
+import { cn } from '@/core/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,185 +42,192 @@ export function FormField<T extends FieldValues = FieldValues>({
   } = useFormContext<T>()
 
   const error = errors[name]
-  const errorMessage = error?.message as string
 
   return (
     <div className={cn('space-y-2', className)}>
       {label && (
-        <Label htmlFor={name} className={cn(required && 'after:content-["*"] after:ml-0.5 after:text-destructive')}>
+        <Label htmlFor={name} className="text-sm font-medium">
           {label}
+          {required && <span className="text-destructive ml-1">*</span>}
         </Label>
       )}
+      {children}
       {description && (
         <p className="text-sm text-muted-foreground">{description}</p>
       )}
-      {children}
-      {errorMessage && (
+      {error && (
         <div className="flex items-center gap-2 text-sm text-destructive">
           <AlertCircle className="h-4 w-4" />
-          <span>{errorMessage}</span>
+          <span>{error.message as string}</span>
         </div>
       )}
     </div>
   )
 }
 
-/**
- * Text input field
- */
-export interface FormInputProps<T extends FieldValues = FieldValues> extends FormFieldProps<T> {
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url'
-  placeholder?: string
-  disabled?: boolean
-  autoComplete?: string
-  showPasswordToggle?: boolean
+// Input field props
+export interface FormInputProps<T extends FieldValues = FieldValues>
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'name'> {
+  name: FieldPath<T>
+  label?: string
+  description?: string
+  required?: boolean
 }
 
+/**
+ * Form input field with validation
+ */
 export function FormInput<T extends FieldValues = FieldValues>({
   name,
   label,
   description,
   required,
-  type = 'text',
-  placeholder,
-  disabled,
-  autoComplete,
-  showPasswordToggle,
   className,
+  ...props
 }: FormInputProps<T>) {
-  const { control } = useFormContext<T>()
-  const [showPassword, setShowPassword] = React.useState(false)
-
-  const inputType = type === 'password' && showPassword ? 'text' : type
+  const { register } = useFormContext<T>()
 
   return (
-    <FormField name={name} label={label} description={description} required={required} className={className}>
-      <Controller
-        name={name}
-        control={control}
-        render={({ field }) => (
-          <div className="relative">
-            <Input
-              {...field}
-              id={name}
-              type={inputType}
-              placeholder={placeholder}
-              disabled={disabled}
-              autoComplete={autoComplete}
-              className={cn(
-                type === 'password' && showPasswordToggle && 'pr-10'
-              )}
-            />
-            {type === 'password' && showPasswordToggle && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-                <span className="sr-only">
-                  {showPassword ? 'Hide password' : 'Show password'}
-                </span>
-              </Button>
-            )}
-          </div>
-        )}
+    <FormField name={name} label={label} description={description} required={required}>
+      <Input
+        id={name}
+        className={className}
+        {...register(name)}
+        {...props}
       />
     </FormField>
   )
 }
 
-/**
- * Textarea field
- */
-export interface FormTextareaProps<T extends FieldValues = FieldValues> extends FormFieldProps<T> {
-  placeholder?: string
-  disabled?: boolean
-  rows?: number
-  maxLength?: number
+// Password input props
+export interface FormPasswordProps<T extends FieldValues = FieldValues>
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'name' | 'type'> {
+  name: FieldPath<T>
+  label?: string
+  description?: string
+  required?: boolean
+  showToggle?: boolean
 }
 
+/**
+ * Form password field with show/hide toggle
+ */
+export function FormPassword<T extends FieldValues = FieldValues>({
+  name,
+  label,
+  description,
+  required,
+  showToggle = true,
+  className,
+  ...props
+}: FormPasswordProps<T>) {
+  const [showPassword, setShowPassword] = React.useState(false)
+  const { register } = useFormContext<T>()
+
+  return (
+    <FormField name={name} label={label} description={description} required={required}>
+      <div className="relative">
+        <Input
+          id={name}
+          type={showPassword ? 'text' : 'password'}
+          className={cn('pr-10', className)}
+          {...register(name)}
+          {...props}
+        />
+        {showToggle && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+      </div>
+    </FormField>
+  )
+}
+
+// Textarea props
+export interface FormTextareaProps<T extends FieldValues = FieldValues>
+  extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'name'> {
+  name: FieldPath<T>
+  label?: string
+  description?: string
+  required?: boolean
+}
+
+/**
+ * Form textarea field with validation
+ */
 export function FormTextarea<T extends FieldValues = FieldValues>({
   name,
   label,
   description,
   required,
-  placeholder,
-  disabled,
-  rows = 3,
-  maxLength,
   className,
+  ...props
 }: FormTextareaProps<T>) {
-  const { control, watch } = useFormContext<T>()
-  const value = watch(name) as string
+  const { register } = useFormContext<T>()
 
   return (
-    <FormField name={name} label={label} description={description} required={required} className={className}>
-      <Controller
-        name={name}
-        control={control}
-        render={({ field }) => (
-          <div className="space-y-2">
-            <Textarea
-              {...field}
-              id={name}
-              placeholder={placeholder}
-              disabled={disabled}
-              rows={rows}
-              maxLength={maxLength}
-            />
-            {maxLength && (
-              <div className="text-right text-xs text-muted-foreground">
-                {(value?.length || 0)}/{maxLength}
-              </div>
-            )}
-          </div>
-        )}
+    <FormField name={name} label={label} description={description} required={required}>
+      <Textarea
+        id={name}
+        className={className}
+        {...register(name)}
+        {...props}
       />
     </FormField>
   )
 }
 
-/**
- * Select field
- */
-export interface FormSelectProps<T extends FieldValues = FieldValues> extends FormFieldProps<T> {
-  placeholder?: string
+// Select option
+export interface SelectOption {
+  label: string
+  value: string
   disabled?: boolean
-  options: Array<{ value: string; label: string; disabled?: boolean }>
 }
 
+// Select props
+export interface FormSelectProps<T extends FieldValues = FieldValues> {
+  name: FieldPath<T>
+  label?: string
+  description?: string
+  required?: boolean
+  placeholder?: string
+  options: SelectOption[]
+  className?: string
+}
+
+/**
+ * Form select field with validation
+ */
 export function FormSelect<T extends FieldValues = FieldValues>({
   name,
   label,
   description,
   required,
-  placeholder = 'Select an option',
-  disabled,
+  placeholder,
   options,
   className,
 }: FormSelectProps<T>) {
   const { control } = useFormContext<T>()
 
   return (
-    <FormField name={name} label={label} description={description} required={required} className={className}>
+    <FormField name={name} label={label} description={description} required={required}>
       <Controller
         name={name}
         control={control}
         render={({ field }) => (
-          <Select
-            value={field.value}
-            onValueChange={field.onChange}
-            disabled={disabled}
-          >
-            <SelectTrigger id={name}>
+          <Select onValueChange={field.onChange} value={field.value}>
+            <SelectTrigger className={className}>
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>
@@ -241,24 +248,29 @@ export function FormSelect<T extends FieldValues = FieldValues>({
   )
 }
 
-/**
- * Checkbox field
- */
-export interface FormCheckboxProps<T extends FieldValues = FieldValues> extends FormFieldProps<T> {
-  disabled?: boolean
+// Checkbox props
+export interface FormCheckboxProps<T extends FieldValues = FieldValues> {
+  name: FieldPath<T>
+  label?: string
+  description?: string
+  required?: boolean
+  className?: string
 }
 
+/**
+ * Form checkbox field with validation
+ */
 export function FormCheckbox<T extends FieldValues = FieldValues>({
   name,
   label,
   description,
-  disabled,
+  required,
   className,
 }: FormCheckboxProps<T>) {
   const { control } = useFormContext<T>()
 
   return (
-    <FormField name={name} description={description} className={className}>
+    <FormField name={name} description={description} required={required} className={className}>
       <Controller
         name={name}
         control={control}
@@ -268,7 +280,6 @@ export function FormCheckbox<T extends FieldValues = FieldValues>({
               id={name}
               checked={field.value}
               onCheckedChange={field.onChange}
-              disabled={disabled}
             />
             {label && (
               <Label
@@ -276,6 +287,7 @@ export function FormCheckbox<T extends FieldValues = FieldValues>({
                 className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 {label}
+                {required && <span className="text-destructive ml-1">*</span>}
               </Label>
             )}
           </div>
@@ -285,39 +297,46 @@ export function FormCheckbox<T extends FieldValues = FieldValues>({
   )
 }
 
-/**
- * Radio group field
- */
-export interface FormRadioGroupProps<T extends FieldValues = FieldValues> extends FormFieldProps<T> {
+// Radio option
+export interface RadioOption {
+  label: string
+  value: string
   disabled?: boolean
-  options: Array<{ value: string; label: string; description?: string; disabled?: boolean }>
-  orientation?: 'horizontal' | 'vertical'
 }
 
+// Radio group props
+export interface FormRadioGroupProps<T extends FieldValues = FieldValues> {
+  name: FieldPath<T>
+  label?: string
+  description?: string
+  required?: boolean
+  options: RadioOption[]
+  className?: string
+}
+
+/**
+ * Form radio group field with validation
+ */
 export function FormRadioGroup<T extends FieldValues = FieldValues>({
   name,
   label,
   description,
-  disabled,
+  required,
   options,
-  orientation = 'vertical',
   className,
 }: FormRadioGroupProps<T>) {
   const { control } = useFormContext<T>()
 
   return (
-    <FormField name={name} label={label} description={description} className={className}>
+    <FormField name={name} label={label} description={description} required={required}>
       <Controller
         name={name}
         control={control}
         render={({ field }) => (
           <RadioGroup
-            value={field.value}
             onValueChange={field.onChange}
-            disabled={disabled}
-            className={cn(
-              orientation === 'horizontal' && 'flex flex-wrap gap-6'
-            )}
+            value={field.value}
+            className={className}
           >
             {options.map((option) => (
               <div key={option.value} className="flex items-center space-x-2">
@@ -326,19 +345,12 @@ export function FormRadioGroup<T extends FieldValues = FieldValues>({
                   id={`${name}-${option.value}`}
                   disabled={option.disabled}
                 />
-                <div className="space-y-1">
-                  <Label
-                    htmlFor={`${name}-${option.value}`}
-                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {option.label}
-                  </Label>
-                  {option.description && (
-                    <p className="text-xs text-muted-foreground">
-                      {option.description}
-                    </p>
-                  )}
-                </div>
+                <Label
+                  htmlFor={`${name}-${option.value}`}
+                  className="text-sm font-normal"
+                >
+                  {option.label}
+                </Label>
               </div>
             ))}
           </RadioGroup>
@@ -348,42 +360,45 @@ export function FormRadioGroup<T extends FieldValues = FieldValues>({
   )
 }
 
-/**
- * Switch field
- */
-export interface FormSwitchProps<T extends FieldValues = FieldValues> extends FormFieldProps<T> {
-  disabled?: boolean
+// Switch props
+export interface FormSwitchProps<T extends FieldValues = FieldValues> {
+  name: FieldPath<T>
+  label?: string
+  description?: string
+  required?: boolean
+  className?: string
 }
 
+/**
+ * Form switch field with validation
+ */
 export function FormSwitch<T extends FieldValues = FieldValues>({
   name,
   label,
   description,
-  disabled,
+  required,
   className,
 }: FormSwitchProps<T>) {
   const { control } = useFormContext<T>()
 
   return (
-    <FormField name={name} description={description} className={className}>
+    <FormField name={name} description={description} required={required} className={className}>
       <Controller
         name={name}
         control={control}
         render={({ field }) => (
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              {label && (
-                <Label htmlFor={name} className="text-sm font-normal">
-                  {label}
-                </Label>
-              )}
-            </div>
+          <div className="flex items-center space-x-2">
             <Switch
               id={name}
               checked={field.value}
               onCheckedChange={field.onChange}
-              disabled={disabled}
             />
+            {label && (
+              <Label htmlFor={name} className="text-sm font-normal">
+                {label}
+                {required && <span className="text-destructive ml-1">*</span>}
+              </Label>
+            )}
           </div>
         )}
       />
@@ -391,9 +406,7 @@ export function FormSwitch<T extends FieldValues = FieldValues>({
   )
 }
 
-/**
- * Form section component
- */
+// Form section props
 export interface FormSectionProps {
   title?: string
   description?: string
@@ -401,6 +414,9 @@ export interface FormSectionProps {
   className?: string
 }
 
+/**
+ * Form section with title and description
+ */
 export function FormSection({
   title,
   description,
@@ -408,33 +424,30 @@ export function FormSection({
   className,
 }: FormSectionProps) {
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn('space-y-4', className)}>
       {(title || description) && (
-        <div className="space-y-2">
-          {title && (
-            <h3 className="text-lg font-medium leading-none">{title}</h3>
-          )}
+        <div className="space-y-1">
+          {title && <h3 className="text-lg font-medium">{title}</h3>}
           {description && (
             <p className="text-sm text-muted-foreground">{description}</p>
           )}
         </div>
       )}
-      <div className="space-y-4">
-        {children}
-      </div>
+      <div className="space-y-4">{children}</div>
     </div>
   )
 }
 
-/**
- * Form actions component
- */
+// Form actions props
 export interface FormActionsProps {
   children: React.ReactNode
   className?: string
   align?: 'left' | 'center' | 'right'
 }
 
+/**
+ * Form actions container
+ */
 export function FormActions({
   children,
   className,
@@ -443,7 +456,7 @@ export function FormActions({
   return (
     <div
       className={cn(
-        'flex gap-3',
+        'flex gap-2',
         {
           'justify-start': align === 'left',
           'justify-center': align === 'center',
@@ -455,17 +468,4 @@ export function FormActions({
       {children}
     </div>
   )
-}
-
-// Export all form components
-export default {
-  FormField,
-  FormInput,
-  FormTextarea,
-  FormSelect,
-  FormCheckbox,
-  FormRadioGroup,
-  FormSwitch,
-  FormSection,
-  FormActions,
 }

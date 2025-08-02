@@ -1,8 +1,7 @@
 import React from 'react'
 import './styles.css'
-import ReactQueryWrapper from '@/components/ReactQueryWrapper'
+import { ReactQueryWrapper, AuthProvider } from '@/components/providers'
 import { Toaster } from '@/components/ui/sonner'
-import { AuthProvider } from '@/contexts/AuthContext'
 
 export const metadata = {
   description: 'Ask and Learn New Languages',

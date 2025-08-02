@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { HistoryList } from '@/components/dashboard/history/HistoryList'
+import { HistoryList } from '@/features/dashboard/components/history/HistoryList'
 
 export default function HistoryPage() {
   const [searchTerm, setSearchTerm] = useState('')

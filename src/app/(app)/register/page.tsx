@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { RegisterForm } from '@/components/auth/RegisterForm'
+import { RegisterForm } from '@/features/auth/components/RegisterForm'
 import Link from 'next/link'
-import { withGuestOnly } from '@/components/auth/withAuth'
+import { withGuestOnly } from '@/features/auth/components/withAuth'
 
 function RegisterPage() {
   return (

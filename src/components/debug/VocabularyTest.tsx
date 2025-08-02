@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { translateSimpleAction } from '@/features/translation/actions/translate-simple.action'
-import { SimpleTranslationResult } from '@/components/schema'
-import { useAuth } from '@/contexts/AuthContext'
+import { SimpleTranslationResult } from '@/core/schema'
+import { useAuth } from '@/features/auth/contexts'
 import { getAuthTokenHybrid } from '@/lib/auth-cookies'
 
 export function VocabularyTest() {
