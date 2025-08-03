@@ -135,7 +135,7 @@ async function getUserPracticeStats(userId: string) {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()
 
     if (sessionDates.includes(today) || sessionDates.includes(yesterday)) {
-      let checkDate = new Date()
+      const checkDate = new Date()
       if (!sessionDates.includes(today)) {
         checkDate.setDate(checkDate.getDate() - 1)
       }

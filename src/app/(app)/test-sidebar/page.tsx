@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DashboardSidebar } from '@/features/dashboard/components/DashboardSidebar'
-import { useVocabulary } from '@/shared/hooks'
+import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
+import { useVocabulary } from '@/utils/hooks'
 import { useAuth } from '@/features/auth/contexts'
 
 export default function TestSidebarPage() {

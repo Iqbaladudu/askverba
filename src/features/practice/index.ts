@@ -1,16 +1,10 @@
 /**
  * Practice Feature Public API
- * Consolidated practice-related modules
+ * Business logic and data layer only (components moved to @/components/practice)
  */
 
 // Types
 export * from './types'
-
-// Components
-export * from './components'
-
-// Hooks
-export * from './hooks'
 
 // Services
 export * from './services/practiceService'

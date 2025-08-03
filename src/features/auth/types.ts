@@ -3,7 +3,7 @@
  * Consolidated from domains/auth/types and other auth-related types
  */
 
-import { BaseEntity } from '@/core/types/api.types'
+import { BaseEntity } from '@/utils/types/api.types'
 
 // User roles
 export type UserRole = 'user' | 'admin' | 'moderator'

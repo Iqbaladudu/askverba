@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight, Star, Sparkles } from 'lucide-react'
-import { heroStats, trustBrands, fadeInUpVariants, itemVariants } from '../../../lib/data'
+import { heroStats, trustBrands, fadeInUpVariants, itemVariants } from '@/lib/data'
 
 export const HeroSection: React.FC = () => {
   return (

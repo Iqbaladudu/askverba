@@ -1,6 +1,6 @@
 /**
  * Translation Feature Public API
- * Consolidated from domains/translation and other translation-related modules
+ * Business logic and data layer only (components moved to @/components/translation)
  */
 
 // Types
@@ -13,9 +13,6 @@ export * from './actions/translate-detailed.action'
 
 // Services
 export * from './services/translationService'
-
-// Components (not exported to avoid client-server boundary issues)
-// export * from './components'
 
 // Re-export commonly used types for convenience
 export type {

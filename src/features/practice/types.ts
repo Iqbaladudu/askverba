@@ -3,7 +3,7 @@
  * Consolidated practice-related types
  */
 
-import { BaseEntity } from '@/core/types/api.types'
+import { BaseEntity } from '@/utils/types/api.types'
 import { VocabularyItem } from '@/features/vocabulary/types'
 
 // Practice session types

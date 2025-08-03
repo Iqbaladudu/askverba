@@ -1,16 +1,10 @@
 /**
  * Vocabulary Feature Public API
- * Consolidated vocabulary-related modules
+ * Business logic and data layer only (components moved to @/components/vocabulary)
  */
 
 // Types
 export * from './types'
-
-// Components
-export * from './components'
-
-// Hooks
-export * from './hooks'
 
 // Services
 export * from './services/vocabularyService'

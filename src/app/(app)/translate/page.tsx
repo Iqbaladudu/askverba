@@ -1,5 +1,5 @@
-import { Navbar } from '@/components/organisms'
-import Translator from '@/features/translation/components/translator'
+import { Navbar } from '@/components/common'
+import Translator from '@/components/translation/translator'
 
 export default function Page() {
   return (

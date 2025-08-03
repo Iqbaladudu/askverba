@@ -3,7 +3,7 @@
  * Consolidated from domains/translation/types and other translation-related types
  */
 
-import { BaseEntity } from '@/core/types/api.types'
+import { BaseEntity } from '@/utils/types/api.types'
 
 // Translation modes
 export type TranslationMode = 'simple' | 'detailed'

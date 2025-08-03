@@ -8,10 +8,10 @@
 import { cookies } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { handleServerActionError, AppError, ErrorCode } from '@/infrastructure/api/error-handler'
-import { validateRequest } from '@/infrastructure/api/error-handler'
-import { LoginSchema, RegisterSchema } from '@/infrastructure/api/validation'
-import { setAuthCookiesOnServer, clearAuthCookiesOnServer } from '@/lib/server-cookies'
+import { handleServerActionError, AppError, ErrorCode } from '@/utils/api/error-handler'
+import { validateRequest } from '@/utils/api/error-handler'
+import { LoginSchema, RegisterSchema } from '@/utils/api/validation'
+import { setAuthCookiesOnServer, clearAuthCookiesOnServer } from '@/utils/auth'
 
 // Types
 interface AuthResult {

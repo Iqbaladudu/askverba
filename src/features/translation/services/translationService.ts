@@ -1,7 +1,7 @@
 'use server'
 
-import { translateSimple, translateDetailed } from '@/infrastructure/ai/translate'
-import { TranslationResult, SimpleTranslationResult } from '@/core/schema'
+import { translateSimple, translateDetailed } from '@/utils/ai/translate'
+import { TranslationResult, SimpleTranslationResult } from '@/utils/schema'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 

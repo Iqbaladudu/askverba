@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { AuthTest } from '@/features/auth/components/AuthTest'
+import { AuthTest } from '@/components/auth/AuthTest'
 
 export default function AuthTestPage() {
   return (

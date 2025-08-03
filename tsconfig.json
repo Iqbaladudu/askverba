@@ -35,9 +35,9 @@
       "@/lib/*": ["./src/lib/*"],
       "@/hooks/*": ["./src/hooks/*"],
       "@/types/*": ["./src/types/*"],
-      "@/constants/*": ["./src/core/constants/*"],
-      "@/utils/*": ["./src/core/utils/*"],
-      "@/config/*": ["./src/core/config/*"]
+      "@/constants/*": ["./src/utils/constants/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/config/*": ["./src/utils/config/*"]
     },
     "target": "ES2022"
   },

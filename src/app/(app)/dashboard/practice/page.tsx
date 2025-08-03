@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { PracticeCenter } from '@/features/practice/components/PracticeCenter'
+import { PracticeCenter } from '@/components/practice/PracticeCenter'
 
 export default function PracticePage() {
   return (

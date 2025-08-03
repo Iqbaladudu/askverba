@@ -1,4 +1,4 @@
-import { VocabularyItem } from '@/core/schema'
+import { VocabularyItem } from '@/utils/schema'
 
 // Types for single term translation
 export interface SingleTermTranslation {

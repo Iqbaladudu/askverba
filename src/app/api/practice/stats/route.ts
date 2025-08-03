@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { practiceAPI } from '@/infrastructure/api/payload'
+import { practiceAPI } from '@/utils/api/payload'
 import { getCurrentUser } from '@/features/auth/actions'
 
 export async function GET(request: NextRequest) {
@@ -186,7 +186,7 @@ function calculateStreaks(sessions: any[]) {
 
   // Calculate current streak
   if (sessionDates.includes(today) || sessionDates.includes(yesterday)) {
-    let checkDate = new Date()
+    const checkDate = new Date()
     if (!sessionDates.includes(today)) {
       checkDate.setDate(checkDate.getDate() - 1)
     }

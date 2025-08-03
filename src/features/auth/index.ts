@@ -1,6 +1,6 @@
 /**
  * Authentication Feature Public API
- * Consolidated auth feature with all related code
+ * Business logic and data layer only (components moved to @/components/auth)
  */
 
 // Types
@@ -8,9 +8,6 @@ export * from './types'
 
 // Actions
 export * from './actions'
-
-// Components
-export * from './components'
 
 // Contexts
 export * from './contexts'

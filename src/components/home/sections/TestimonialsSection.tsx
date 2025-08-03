@@ -3,7 +3,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Quote } from 'lucide-react'
-import { testimonials } from '../../../lib/data'
+import { testimonials } from '@/lib/data'
 
 export const TestimonialsSection: React.FC = () => {
   return (

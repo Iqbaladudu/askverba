@@ -6,4 +6,4 @@ export { CTASection } from './CTASection'
 export { Footer } from './Footer'
 
 // Data exports (optional, for direct access)
-export * from '../../../lib/data'
+export * from '@/lib/data'

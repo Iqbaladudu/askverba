@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { translationHistoryAPI } from '@/infrastructure/api/payload'
+import { translationHistoryAPI } from '@/utils/api/payload'
 import { getCurrentUser } from '@/features/auth/actions'
 
 export async function GET(request: NextRequest) {

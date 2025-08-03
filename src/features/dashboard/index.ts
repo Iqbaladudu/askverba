@@ -1,13 +1,7 @@
 /**
  * Dashboard Feature Public API
- * Consolidated dashboard functionality
+ * Business logic and data layer only (components moved to @/components/dashboard)
  */
-
-// Components
-export * from './components'
-
-// Hooks
-export * from './hooks'
 
 // Services
 export * from './services'

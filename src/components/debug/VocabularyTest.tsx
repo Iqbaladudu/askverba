@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { translateSimpleAction } from '@/features/translation/actions/translate-simple.action'
-import { SimpleTranslationResult } from '@/core/schema'
+import { SimpleTranslationResult } from '@/utils/schema'
 import { useAuth } from '@/features/auth/contexts'
-import { getAuthTokenHybrid } from '@/lib/auth-cookies'
+import { getAuthTokenHybrid } from '@/lib/auth'
 
 export function VocabularyTest() {
   const [inputText, setInputText] = useState(

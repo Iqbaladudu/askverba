@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/features/auth/actions'
 import { createPracticeSession } from '@/features/practice'
-import { PracticeSessionCreateSchema } from '@/infrastructure/api/validation'
+import { PracticeSessionCreateSchema } from '@/utils/api/validation'
 
 export async function POST(request: NextRequest) {
   try {

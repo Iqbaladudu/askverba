@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/features/auth/contexts'
-import { useVocabulary } from '@/shared/hooks'
+import { useVocabulary } from '@/utils/hooks'
 import { toast } from 'sonner'
 
 export default function DebugVocabularyPage() {

@@ -4,9 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { handleApiError, validateRequest, requireAuth } from '@/infrastructure/api/error-handler'
-import { TranslationRequestSchema } from '@/infrastructure/api/validation'
-import { getAuthTokenFromCookies, getCustomerFromCookies } from '@/lib/server-cookies'
+import { handleApiError, validateRequest, requireAuth } from '@/utils/api/error-handler'
+import { TranslationRequestSchema } from '@/utils/api/validation'
+import { getAuthTokenFromCookies, getCustomerFromCookies } from '@/utils/auth/server-cookies'
 import { translateWithCache } from '@/features/translation'
 
 /**

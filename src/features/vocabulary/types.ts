@@ -3,7 +3,7 @@
  * Consolidated vocabulary-related types
  */
 
-import { BaseEntity } from '@/core/types/api.types'
+import { BaseEntity } from '@/utils/types/api.types'
 
 // Vocabulary status
 export type VocabularyStatus = 'new' | 'learning' | 'mastered'

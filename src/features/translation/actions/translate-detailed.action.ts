@@ -1,7 +1,7 @@
 import { translateWithCache } from '@/features/translation'
-import { TranslationResult } from '@/core/schema'
-import { handleServerActionError, validateRequest } from '@/infrastructure/api/error-handler'
-import { TranslationRequestSchema } from '@/infrastructure/api/validation'
+import { TranslationResult } from '@/utils/schema'
+import { handleServerActionError, validateRequest } from '@/utils/api/error-handler'
+import { TranslationRequestSchema } from '@/utils/api/validation'
 import { getCurrentUser } from '@/features/auth/actions'
 
 // Types

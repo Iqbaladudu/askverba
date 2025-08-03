@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/features/auth/contexts'
-import { getAuthTokenFromDocument, getCustomerFromDocument } from '@/lib/auth-cookies'
+import { getAuthTokenFromDocument, getCustomerFromDocument } from '@/lib/auth'
 
 export default function DebugAuthPage() {
   const { customer, token, isAuthenticated, isLoading } = useAuth()

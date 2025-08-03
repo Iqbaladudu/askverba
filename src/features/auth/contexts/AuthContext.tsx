@@ -6,8 +6,8 @@ import {
   getCustomerHybrid,
   setAuthCookiesOnClient,
   clearAuthCookiesOnClient,
-} from '@/lib/auth-cookies'
-import { cleanupOldAuthStorage } from '@/lib/cleanup-storage'
+  cleanupOldAuthStorage,
+} from '@/lib/auth'
 
 type Customer = {
   id: string

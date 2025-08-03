@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { Github, Linkedin, MessageSquare, Twitter } from 'lucide-react'
-import { footerLinks } from '../../../lib/data'
+import { footerLinks } from '@/lib/data'
 
 export const socialLinks = [
   { icon: <Twitter className="h-5 w-5" />, href: '#', label: 'Twitter' },

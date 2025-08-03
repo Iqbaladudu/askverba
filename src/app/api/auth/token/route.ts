@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthTokenFromCookies, getCustomerFromCookies } from '@/lib/server-cookies'
+import { getAuthTokenFromCookies, getCustomerFromCookies } from '@/utils/auth/server-cookies'
 
 export async function GET(request: NextRequest) {
   try {
