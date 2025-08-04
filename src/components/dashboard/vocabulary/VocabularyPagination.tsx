@@ -77,22 +77,22 @@ export function VocabularyPagination({
   }
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white rounded-lg border p-4 shadow-sm">
       {/* Results info */}
-      <div className="text-sm text-neutral-600">
-        Showing {startItem} to {endItem} of {totalDocs} words
+      <div className="text-sm text-neutral-600 text-center sm:text-left">
+        <span className="font-medium">{startItem}-{endItem}</span> of <span className="font-medium">{totalDocs}</span> words
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        {/* Page size selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-neutral-600">Show</span>
+        {/* Page size selector - Hidden on mobile */}
+        <div className="hidden sm:flex items-center gap-2 text-sm text-neutral-600">
+          <span>Show</span>
           <Select
             value={limit.toString()}
             onValueChange={(value) => onPageSizeChange(parseInt(value))}
             disabled={loading}
           >
-            <SelectTrigger className="w-20">
+            <SelectTrigger className="w-20 h-9 border-neutral-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -102,52 +102,97 @@ export function VocabularyPagination({
               <SelectItem value="100">100</SelectItem>
             </SelectContent>
           </Select>
-          <span className="text-sm text-neutral-600">per page</span>
         </div>
 
         {/* Pagination controls */}
-        <div className="flex items-center gap-1">
-          {/* First page */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(1)}
-            disabled={!hasPrevPage || loading}
-            className="h-8 w-8 p-0"
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-
+        <div className="flex items-center justify-center gap-1">
           {/* Previous page */}
           <Button
             variant="outline"
             size="sm"
             onClick={() => onPageChange(page - 1)}
             disabled={!hasPrevPage || loading}
-            className="h-8 w-8 p-0"
+            className="h-9 px-3 border-neutral-200 hover:bg-neutral-50"
           >
             <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline ml-1">Previous</span>
           </Button>
 
-          {/* Page numbers */}
-          <div className="flex items-center gap-1">
-            {getPageNumbers().map((pageNum, index) => (
-              <React.Fragment key={index}>
-                {pageNum === '...' ? (
-                  <span className="px-2 text-sm text-neutral-400">...</span>
-                ) : (
-                  <Button
-                    variant={pageNum === page ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => onPageChange(pageNum as number)}
-                    disabled={loading}
-                    className="h-8 w-8 p-0"
-                  >
-                    {pageNum}
-                  </Button>
+          {/* Page numbers - Simplified for mobile */}
+          <div className="flex items-center gap-1 mx-2">
+            {totalPages <= 7 ? (
+              // Show all pages if 7 or fewer
+              Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={pageNum === page ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => onPageChange(pageNum)}
+                  disabled={loading}
+                  className={`h-9 w-9 ${
+                    pageNum === page 
+                      ? 'bg-primary-600 text-white hover:bg-primary-700' 
+                      : 'hover:bg-neutral-100'
+                  }`}
+                >
+                  {pageNum}
+                </Button>
+              ))
+            ) : (
+              // Smart pagination for many pages
+              <>
+                {page > 3 && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onPageChange(1)}
+                      disabled={loading}
+                      className="h-9 w-9 hover:bg-neutral-100"
+                    >
+                      1
+                    </Button>
+                    {page > 4 && <span className="px-2 text-neutral-400">...</span>}
+                  </>
                 )}
-              </React.Fragment>
-            ))}
+                
+                {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+                  const pageNum = Math.max(1, Math.min(page - 1 + i, totalPages))
+                  if (pageNum < Math.max(1, page - 1) || pageNum > Math.min(page + 1, totalPages)) return null
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={pageNum === page ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => onPageChange(pageNum)}
+                      disabled={loading}
+                      className={`h-9 w-9 ${
+                        pageNum === page 
+                          ? 'bg-primary-600 text-white hover:bg-primary-700' 
+                          : 'hover:bg-neutral-100'
+                      }`}
+                    >
+                      {pageNum}
+                    </Button>
+                  )
+                })}
+
+                {page < totalPages - 2 && (
+                  <>
+                    {page < totalPages - 3 && <span className="px-2 text-neutral-400">...</span>}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onPageChange(totalPages)}
+                      disabled={loading}
+                      className="h-9 w-9 hover:bg-neutral-100"
+                    >
+                      {totalPages}
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
           </div>
 
           {/* Next page */}
@@ -156,21 +201,30 @@ export function VocabularyPagination({
             size="sm"
             onClick={() => onPageChange(page + 1)}
             disabled={!hasNextPage || loading}
-            className="h-8 w-8 p-0"
+            className="h-9 px-3 border-neutral-200 hover:bg-neutral-50"
           >
+            <span className="hidden sm:inline mr-1">Next</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
+        </div>
 
-          {/* Last page */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(totalPages)}
-            disabled={!hasNextPage || loading}
-            className="h-8 w-8 p-0"
+        {/* Mobile page size selector */}
+        <div className="flex sm:hidden items-center justify-center gap-2 text-sm text-neutral-600">
+          <span>Per page:</span>
+          <Select
+            value={limit.toString()}
+            onValueChange={(value) => onPageSizeChange(parseInt(value))}
+            disabled={loading}
           >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
+            <SelectTrigger className="w-16 h-8 border-neutral-200">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>
