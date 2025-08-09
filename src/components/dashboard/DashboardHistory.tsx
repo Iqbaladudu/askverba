@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button'
 import { BookOpen, History, Clock, ArrowRight, Star } from 'lucide-react'
 import { useVocabulary, useTranslationHistory } from '@/utils/hooks'
 import Link from 'next/link'
+import Markdown from 'react-markdown'
+import rehypeKatex from 'rehype-katex'
+import remarkMath from 'remark-math'
 
 export function DashboardHistory() {
   // Get recent data (limit to 10 items each)
@@ -143,7 +146,9 @@ export function DashboardHistory() {
                   </p>
                   <div className="w-full h-px bg-neutral-200"></div>
                   <p className="text-neutral-800 font-medium line-clamp-2 leading-relaxed">
-                    {translation.translatedText}
+                    <Markdown rehypePlugins={[rehypeKatex]} remarkPlugins={[remarkMath]}>
+                      {translation.translatedText}
+                    </Markdown>
                   </p>
                 </div>
                 <div className="flex items-center justify-between">
@@ -187,12 +192,12 @@ export function DashboardHistory() {
                   All Vocabulary
                 </Button>
               </Link>
-              <Link href="/dashboard/practice">
+              {/* <Link href="/dashboard/practice">
                 <Button size="sm" className="bg-primary-600 hover:bg-primary-700 text-white">
                   Practice Now
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
-              </Link>
+              </Link> */}
             </div>
           </div>
         </CardHeader>

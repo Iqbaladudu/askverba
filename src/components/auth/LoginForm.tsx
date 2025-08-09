@@ -15,7 +15,8 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useMutation } from '@tanstack/react-query'
 import { loginAction } from '@/features/auth/actions'
 import { toast } from 'sonner'
@@ -67,67 +68,81 @@ export const LoginForm: React.FC = () => {
   }
 
   return (
-    <Card className="max-w-md mx-auto mt-16 shadow-xl">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Sign in to your account</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="you@email.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Password"
-                        {...field}
-                      />
-                      <button
-                        type="button"
-                        tabIndex={-1}
-                        className="absolute right-2 top-2 text-gray-400 hover:text-gray-700"
-                        onClick={() => setShowPassword((v) => !v)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              className="w-full bg-[#FF5B9E] hover:bg-[#E54A8C] text-white font-semibold rounded-xl py-6 text-base"
-              disabled={loginMutation.isPending}
-            >
-              {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+    >
+      <Card className="max-w-md mx-auto mt-16 shadow-xl border border-neutral-200/60 dark:border-neutral-800/60">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="you@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="Password"
+                          {...field}
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="button"
+                          tabIndex={-1}
+                          className="absolute right-2 top-2 text-gray-400 hover:text-gray-700"
+                          onClick={() => setShowPassword((v) => !v)}
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full bg-[#FF5B9E] hover:bg-[#E54A8C] text-white font-semibold rounded-xl py-6 text-base"
+                disabled={loginMutation.isPending}
+              >
+                {loginMutation.isPending ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Signing in...
+                  </span>
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </motion.div>
   )
 }

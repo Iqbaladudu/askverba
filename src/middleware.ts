@@ -35,6 +35,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  // check if user open /dahboard route, if so
+  // redirect to /dashboard/translate
+  if (pathname === '/dashboard') {
+    const translateUrl = new URL('/dashboard/translate', request.url)
+    return NextResponse.redirect(translateUrl)
+  }
+
   // If accessing auth routes with token, redirect to dashboard
   if (isAuthRoute && token) {
     const dashboardUrl = new URL('/dashboard', request.url)

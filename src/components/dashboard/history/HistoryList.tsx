@@ -1,13 +1,18 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Copy, Star, Clock, Languages, Trash2, BookmarkPlus } from 'lucide-react'
+import { Star, Clock, Languages, Trash2, BookmarkPlus, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslationHistory } from '@/utils/hooks'
 import { useDebounce } from '@/utils/hooks'
+import { OutputActions } from '@/components/translation/outputActions'
+import Markdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
 
 interface TranslationHistory {
   id: string
@@ -22,9 +27,6 @@ interface TranslationHistory {
   confidence: number
 }
 
-type FilterType = 'all' | 'favorites' | 'recent' | 'long'
-type SortType = 'newest' | 'oldest' | 'alphabetical' | 'length'
-
 interface HistoryListProps {
   filters?: {
     search?: string
@@ -33,7 +35,6 @@ interface HistoryListProps {
 
 export function HistoryList({ filters }: HistoryListProps) {
   const [currentPage, setCurrentPage] = React.useState(1)
-  const [pageSize, setPageSize] = React.useState(20)
 
   // Debounce search term
   const debouncedSearch = useDebounce(filters?.search || '', 500)
@@ -42,7 +43,7 @@ export function HistoryList({ filters }: HistoryListProps) {
   const apiOptions = React.useMemo(() => {
     const options: any = {
       page: currentPage,
-      limit: pageSize,
+      limit: 20,
       sortBy: 'createdAt',
       sortOrder: 'desc',
     }
@@ -52,18 +53,10 @@ export function HistoryList({ filters }: HistoryListProps) {
     }
 
     return options
-  }, [currentPage, pageSize, debouncedSearch])
+  }, [currentPage, debouncedSearch])
 
-  const {
-    history,
-    loading,
-    error,
-    pagination,
-    toggleFavorite,
-    updateTranslation,
-    deleteTranslation,
-    refetch,
-  } = useTranslationHistory(apiOptions)
+  const { history, loading, error, pagination, toggleFavorite, deleteTranslation } =
+    useTranslationHistory(apiOptions)
 
   // Reset to first page when search changes
   React.useEffect(() => {
@@ -73,12 +66,6 @@ export function HistoryList({ filters }: HistoryListProps) {
   // Handle page change
   const handlePageChange = React.useCallback((page: number) => {
     setCurrentPage(page)
-  }, [])
-
-  // Handle page size change
-  const handlePageSizeChange = React.useCallback((newPageSize: number) => {
-    setPageSize(newPageSize)
-    setCurrentPage(1)
   }, [])
 
   if (loading) {
@@ -130,7 +117,7 @@ export function HistoryList({ filters }: HistoryListProps) {
     mode: item.mode,
     timestamp: item.createdAt,
     isFavorite: item.isFavorite,
-    characterCount: item.characterCount || item.originalText.length,
+    characterCount: item.characterCount || item.originalText?.length || 0,
     confidence: item.confidence || 95,
   }))
 
@@ -145,11 +132,6 @@ export function HistoryList({ filters }: HistoryListProps) {
     if (diffInHours < 24) return `${diffInHours}h ago`
     if (diffInHours < 48) return 'Yesterday'
     return date.toLocaleDateString()
-  }
-
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text)
-    toast.success('Copied to clipboard!')
   }
 
   const handleToggleFavorite = async (id: string) => {
@@ -202,14 +184,15 @@ export function HistoryList({ filters }: HistoryListProps) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleCopy(item.translatedText)}
-                    className="h-8 w-8 p-0 text-neutral-400 hover:text-neutral-600"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                  <OutputActions
+                    textToCopy={item.translatedText}
+                    textToSpeak={item.translatedText}
+                    speakLang={
+                      item.targetLanguage?.toLowerCase().startsWith('indones') ? 'id-ID' : 'en-US'
+                    }
+                    copyTooltip="Copy translation"
+                    speakTooltip="Listen"
+                  />
 
                   <Button
                     variant="ghost"
@@ -249,7 +232,27 @@ export function HistoryList({ filters }: HistoryListProps) {
                     Translation ({item.targetLanguage})
                   </h4>
                   <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-sm text-neutral-800">{item.translatedText}</p>
+                    {/* Meta details */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-neutral-600">
+                      <div className="flex items-center gap-2">
+                        <Info className="h-3.5 w-3.5 text-neutral-400" />
+                        <span>{item.characterCount} chars</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Info className="h-3.5 w-3.5 text-neutral-400" />
+                        <span>confidence {item.confidence}%</span>
+                      </div>
+                    </div>
+
+                    {item.mode === 'simple' && (
+                      <p className="text-sm text-neutral-800">{item.translatedText}</p>
+                    )}
+
+                    {item.mode === 'detailed' && (
+                      <Markdown rehypePlugins={[rehypeKatex]} remarkPlugins={[remarkMath]}>
+                        {item.translatedText}
+                      </Markdown>
+                    )}
                   </div>
                 </div>
               </div>

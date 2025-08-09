@@ -14,7 +14,7 @@ interface SidebarProps {
 const navigationItems = [
   {
     title: 'Translate',
-    href: '/dashboard',
+    href: '/dashboard/translate',
     icon: Home,
     description: 'Quick translations',
     disabled: false,

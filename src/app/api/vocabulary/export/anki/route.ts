@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/features/auth/actions'
-import { getUserVocabulary } from '@/features/vocabulary'
+import { getUserVocabularyWithOptions } from '@/features/vocabulary'
 import {
   createExportPackage,
   AnkiExportOptions,
@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
       includeTags = true,
       deckName = 'AskVerba Vocabulary',
       cardType = 'basic',
+      limit = 50,
       filters = {},
     } = body
 
@@ -35,8 +36,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid card type' }, { status: 400 })
     }
 
-    // Get vocabulary items
-    const vocabularyResponse = await getUserVocabulary(user.id)
+    // Get vocabulary items with limit (user-selected)
+    const vocabularyResponse = await getUserVocabularyWithOptions(user.id, { limit })
 
     if (!vocabularyResponse.docs || vocabularyResponse.docs.length === 0) {
       return NextResponse.json({ error: 'No vocabulary items found' }, { status: 404 })
@@ -81,8 +82,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get vocabulary stats for export preview
-    const vocabularyResponse = await getUserVocabulary(user.id)
+    // Get vocabulary stats for export preview (count)
+    const vocabularyResponse = await getUserVocabularyWithOptions(user.id, { limit: 1 })
 
     return NextResponse.json({
       success: true,

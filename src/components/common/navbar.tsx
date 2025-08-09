@@ -53,7 +53,7 @@ const LANDING_NAV_ITEMS: NavItem[] = [
 
 // Dashboard navigation items (when authenticated)
 const DASHBOARD_NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: Home, disabled: false },
+  { label: 'Translate', href: '/dashboard/translate', icon: Home, disabled: false },
   { label: 'Vocabulary', href: '/dashboard/vocabulary', icon: BookOpen, disabled: false },
   { label: 'Practice', href: '/dashboard/practice', icon: Brain, disabled: true },
   { label: 'History', href: '/dashboard/history', icon: History, disabled: false },
@@ -96,7 +96,10 @@ const Navbar: React.FC = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-neutral-200">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         {/* Logo */}
-        <Link href={isAuthenticated ? '/dashboard' : '/'} className="flex items-center gap-2 group">
+        <Link
+          href={isAuthenticated ? '/dashboard/translate' : '/'}
+          className="flex items-center gap-2 group"
+        >
           <span className="bg-primary-500 p-2 rounded-xl">
             <MessageSquare className="h-6 w-6 text-white" />
           </span>
@@ -123,20 +126,31 @@ const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center gap-1">
           {!isDashboard &&
             navItems.map((item) => {
-              const ItemComponent = item.disabled ? 'span' : Link
+              if (item.disabled) {
+                return (
+                  <span
+                    key={item.label}
+                    className={cn(
+                      'px-4 py-2 rounded-lg font-medium transition',
+                      'text-neutral-400 cursor-not-allowed',
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                )
+              }
+
               return (
-                <ItemComponent
+                <Link
                   key={item.label}
-                  {...(!item.disabled && { href: item.href })}
+                  href={item.href}
                   className={cn(
                     'px-4 py-2 rounded-lg font-medium transition',
-                    item.disabled
-                      ? 'text-neutral-400 cursor-not-allowed'
-                      : 'text-neutral-700 hover:text-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500',
+                    'text-neutral-700 hover:text-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500',
                   )}
                 >
                   {item.label}
-                </ItemComponent>
+                </Link>
               )
             })}
           {/* Right Actions */}

@@ -21,15 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Download, 
-  FileText, 
-  Settings, 
-  Info, 
-  CheckCircle,
-  AlertCircle,
-  Copy
-} from 'lucide-react'
+import { Download, FileText, Info, CheckCircle, Copy } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface AnkiExportModalProps {
@@ -46,6 +38,7 @@ interface ExportOptions {
   includeTags: boolean
   deckName: string
   cardType: 'basic' | 'basic-reverse' | 'cloze'
+  limit: number
 }
 
 export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModalProps) {
@@ -57,8 +50,9 @@ export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModal
     includeTags: true,
     deckName: 'AskVerba Vocabulary',
     cardType: 'basic',
+    limit: Math.min(50, totalWords || 50),
   })
-  
+
   const [isExporting, setIsExporting] = useState(false)
   const [exportResult, setExportResult] = useState<{
     content: string
@@ -67,7 +61,7 @@ export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModal
   } | null>(null)
 
   const handleOptionChange = (key: keyof ExportOptions, value: any) => {
-    setOptions(prev => ({
+    setOptions((prev) => ({
       ...prev,
       [key]: value,
     }))
@@ -89,7 +83,7 @@ export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModal
       }
 
       const result = await response.json()
-      
+
       if (result.success) {
         setExportResult(result.data)
         toast.success(`Successfully exported ${result.data.totalCards} cards!`)
@@ -107,8 +101,8 @@ export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModal
   const handleDownload = () => {
     if (!exportResult) return
 
-    const blob = new Blob([exportResult.content], { 
-      type: options.format === 'csv' ? 'text/csv' : 'text/plain' 
+    const blob = new Blob([exportResult.content], {
+      type: options.format === 'csv' ? 'text/csv' : 'text/plain',
     })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -118,13 +112,13 @@ export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModal
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    
+
     toast.success('File downloaded successfully!')
   }
 
   const handleCopyInstructions = () => {
     if (!exportResult) return
-    
+
     navigator.clipboard.writeText(exportResult.instructions)
     toast.success('Instructions copied to clipboard!')
   }
@@ -232,7 +226,7 @@ export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModal
             <Label className="text-sm font-medium">Card Type</Label>
             <Select
               value={options.cardType}
-              onValueChange={(value: 'basic' | 'basic-reverse' | 'cloze') => 
+              onValueChange={(value: 'basic' | 'basic-reverse' | 'cloze') =>
                 handleOptionChange('cardType', value)
               }
             >
@@ -260,7 +254,7 @@ export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModal
           {/* Include Options */}
           <div className="space-y-4">
             <Label className="text-sm font-medium">Include in Export</Label>
-            
+
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -308,6 +302,26 @@ export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModal
             </div>
           </div>
 
+          {/* Limit selection */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">How many words?</Label>
+            <Input
+              type="number"
+              min={1}
+              max={totalWords}
+              value={options.limit}
+              onChange={(e) =>
+                handleOptionChange(
+                  'limit',
+                  Math.max(1, Math.min(Number(e.target.value) || 1, totalWords)),
+                )
+              }
+            />
+            <p className="text-xs text-neutral-500">
+              You can export up to {totalWords} words. Default {options.limit}.
+            </p>
+          </div>
+
           {/* Info Box */}
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex items-start gap-3">
@@ -329,11 +343,7 @@ export function AnkiExportModal({ isOpen, onClose, totalWords }: AnkiExportModal
             <Button variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button 
-              onClick={handleExport} 
-              disabled={isExporting}
-              className="flex-1"
-            >
+            <Button onClick={handleExport} disabled={isExporting} className="flex-1">
               {isExporting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />

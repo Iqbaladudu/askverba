@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Home, BookOpen, BarChart3, User, Languages, History, Brain } from 'lucide-react'
+import { Languages, BookOpen, Brain, History } from 'lucide-react'
 
 interface MobileNavigationProps {
   className?: string
@@ -13,7 +13,7 @@ interface MobileNavigationProps {
 const mobileNavItems = [
   {
     title: 'Translate',
-    href: '/dashboard',
+    href: '/dashboard/translate',
     icon: Languages,
     disabled: false,
   },
@@ -43,75 +43,84 @@ export function MobileNavigation({ className }: MobileNavigationProps) {
   return (
     <nav
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-xl border-t border-neutral-200/50 px-3 py-2',
-        'shadow-2xl shadow-neutral-900/10 safe-area-pb',
+        // Compact floating pill bar
+        'fixed left-1/2 -translate-x-1/2 bottom-3 z-50 w-[min(100%-16px,720px)]',
+        'rounded-2xl border border-neutral-200/60 bg-white/90 supports-[backdrop-filter]:backdrop-blur-md',
+        'shadow-lg shadow-neutral-900/5 ring-1 ring-black/5 safe-area-pb px-2.5 py-1.5',
+        'dark:bg-neutral-950/80 dark:border-neutral-800/60',
         className,
       )}
+      role="navigation"
+      aria-label="Mobile navigation"
     >
-      <div className="flex items-center justify-around max-w-lg mx-auto">
+      <div className="flex items-stretch justify-between gap-1 max-w-xl mx-auto">
         {mobileNavItems.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname?.startsWith(item.href)
           const isDisabled = item.disabled
 
-          const ItemComponent = isDisabled ? 'div' : Link
-
-          return (
-            <ItemComponent
+          return isDisabled ? (
+            <div
               key={item.href}
-              {...(!isDisabled && { href: item.href })}
+              aria-disabled="true"
               className={cn(
-                'flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-2xl transition-all duration-300 min-w-0 flex-1 relative',
-                'active:scale-95 touch-manipulation',
-                isDisabled
-                  ? 'text-neutral-400 cursor-not-allowed opacity-60'
-                  : isActive
-                    ? 'text-primary-600 bg-gradient-to-b from-primary-50 to-primary-100/50 shadow-lg shadow-primary-500/20'
-                    : 'text-neutral-500 hover:text-neutral-700 active:bg-neutral-100/50',
+                'group flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl min-h-[44px] min-w-0 flex-1 relative',
+                'text-neutral-400 cursor-not-allowed opacity-50 select-none pointer-events-none',
               )}
             >
-              {/* Background glow for active state */}
-              {isActive && !isDisabled && (
-                <div className="absolute inset-0 bg-gradient-to-b from-primary-100/50 to-primary-50/30 rounded-2xl blur-sm" />
-              )}
+              {/* Active indicator (never shown for disabled) */}
+              {/* ...no indicator... */}
 
-              <div className="relative z-10 flex flex-col items-center gap-1.5">
+              <div className="relative z-10 flex flex-col items-center gap-0.5">
                 <div
                   className={cn(
-                    'w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300',
-                    isDisabled
-                      ? 'bg-neutral-100 text-neutral-400'
-                      : isActive
-                        ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30 scale-110'
-                        : 'bg-transparent',
+                    'w-6 h-6 rounded-lg flex items-center justify-center transition-[transform,background-color,color] duration-200 ease-out',
+                    'bg-neutral-100 text-neutral-400',
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                </div>
+
+                <span className="text-[10px] leading-3 font-medium truncate">{item.title}</span>
+              </div>
+            </div>
+          ) : (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? 'page' : undefined}
+              className={cn(
+                'group flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl min-h-[44px] min-w-0 flex-1 relative',
+                'active:scale-[0.98] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40',
+                isActive ? 'text-primary-600' : 'text-neutral-700 hover:text-neutral-900',
+              )}
+            >
+              <div className="relative z-10 flex flex-col items-center gap-0.5">
+                <div
+                  className={cn(
+                    'w-6 h-6 rounded-lg flex items-center justify-center transition-[transform,background-color,color] duration-200 ease-out',
+                    isActive
+                      ? 'bg-primary-500 text-white shadow-sm shadow-primary-500/20'
+                      : 'bg-transparent',
                   )}
                 >
                   <item.icon
                     className={cn(
-                      'h-5 w-5 transition-all duration-300',
-                      isDisabled ? 'text-neutral-400' : isActive ? 'text-white' : 'text-current',
+                      'h-4 w-4 transition-colors duration-200',
+                      isActive ? 'text-white' : 'text-current',
                     )}
                   />
                 </div>
 
                 <span
                   className={cn(
-                    'text-xs font-semibold truncate transition-all duration-300',
-                    isDisabled
-                      ? 'text-neutral-400'
-                      : isActive
-                        ? 'text-primary-700 scale-105'
-                        : 'text-current',
+                    'text-[10px] leading-3 font-medium truncate tracking-wide',
+                    isActive ? 'text-primary-700' : 'text-current',
                   )}
                 >
                   {item.title}
                 </span>
-
-                {/* Active indicator dot */}
-                {isActive && !isDisabled && (
-                  <div className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse" />
-                )}
               </div>
-            </ItemComponent>
+            </Link>
           )
         })}
       </div>
