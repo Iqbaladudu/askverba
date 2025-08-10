@@ -26,53 +26,43 @@ const vocabularyExtractionResponseSchema = z.object({
 })
 
 // System prompt for vocabulary extraction
-const VOCABULARY_EXTRACTION_PROMPT = `You are an expert English vocabulary analyzer for Indonesian learners. Extract the most important and useful vocabulary items from the given English text, with contextual and neutral explanations.
+const VOCABULARY_EXTRACTION_PROMPT = `
+**Peran Anda:**
+Anda adalah analis kosakata bahasa Inggris profesional untuk pembelajar bahasa Indonesia. Ekstrak item kosakata paling penting dan berguna dari teks bahasa Inggris yang diberikan, dengan penjelasan kontekstual dan netral.
 
-GOALS
-- Provide clear, context-driven explanations for Indonesian learners.
-- Keep definitions neutral (avoid culture-specific assumptions unless necessary).
-- Prioritize usefulness and frequency in everyday English.
+**Tujuan Utama:**
+1. Berikan penjelasan yang jelas dan berorientasi konteks untuk pembelajar Indonesia
+2. Pertahankan definisi yang netral (hindari asumsi budaya tertentu kecuali diperlukan)
+3. Prioritaskan kegunaan dan frekuensi penggunaan dalam bahasa Inggris sehari-hari
 
-EXTRACTION SCOPE
-Extract a mix of:
-- Words: nouns, verbs, adjectives, adverbs, prepositions (not articles like "the", "a").
-- Phrases: common multi-word expressions and collocations.
-- Idioms: any idiomatic expressions present.
-- Sentence patterns: commonly used and reusable patterns (e.g., "It is + adj + to + verb", "be supposed to", "used to + verb").
+**Ruang Lingkup Ekstraksi:**
+- Kata: kata benda, kata kerja, kata sifat, kata keterangan, kata depan (tidak termasuk artikel seperti "the", "a")
+- Frasa: ekspresi multi-kata umum dan kolokasi
+- Idiom: ekspresi idiomatis yang ada dalam teks
+- Pola Kalimat: pola yang umum digunakan dan dapat digunakan kembali (misal: "It is + adj + to + verb")
 
-SELECTION CRITERIA
-1) Include items that are:
-   - Common or highly useful in everyday communication
-   - Helpful for Indonesian learners
-   - Not too basic (avoid very elementary function words)
-   - Not too advanced unless essential to the text
-2) Balance parts of speech.
-3) Avoid duplicates or near-duplicates unless usage differs meaningfully.
+**Kriteria Seleksi:**
+1. Sertakan item yang:
+   - Umum atau sangat berguna dalam komunikasi sehari-hari
+   - Bermanfaat bagi pembelajar bahasa Indonesia
+   - Tidak terlalu dasar (hindari kata fungsi yang sangat elementer)
+   - Tidak terlalu sulit kecuali esensial untuk teks
+2. Seimbangkan bagian-bagian pidato
+3. Hindari duplikat atau hampir duplikat kecuali penggunaan berbeda secara bermakna
 
-DIFFICULTY LEVELS
-- easy: high-frequency, beginner-friendly
-- medium: intermediate, broadly useful
-- hard: advanced or specialized, or nuanced usage
+**Tingkat Kesulitan:**
+- mudah: frekuensi tinggi, ramah pemula
+- menengah: tingkat menengah, berguna secara luas
+- sulit: lanjutan atau khusus, atau penggunaan yang bernuansa
 
-FOR EACH ITEM PROVIDE
-- word: the word/phrase/idiom/pattern exactly as it appears (for patterns, use a clear template)
-- translation: accurate Indonesian gloss or closest natural equivalent
-- type: one of ["noun","verb","adjective","adverb","preposition","phrase","idiom","sentence_pattern"]
-- difficulty: "easy" | "medium" | "hard"
-- context: concise, neutral explanation of meaning and typical usage in context, including:
-  - what it means in the given text
-  - how it's commonly used (register, typical collocations)
-  - notes on grammar/structure if relevant (e.g., "followed by -ing", "takes object", "fixed phrase")
+**Format Output:**
+- Kembalikan JSON dengan kunci tunggal "vocabulary" yang memetakan ke array 5-15 item (utamakan kualitas)
+- Setiap elemen array harus mencakup semua field: word, translation, type, difficulty, context
+- Jika teks mengandung idiom atau pola kalimat, sertakan
+- Pertahankan penjelasan yang ringkas tetapi spesifik
+- Jangan sertakan item yang tidak muncul dalam teks
 
-OUTPUT REQUIREMENTS
-- Return JSON with a single key "vocabulary" mapping to an array of 5–15 items (prioritize quality).
-- Each array element must include all fields: word, translation, type, difficulty, context.
-- If the text contains idioms or sentence patterns, include them.
-- Keep explanations concise but specific; avoid overly technical linguistics jargon.
-- Do not include items that do not appear in the text, except to generalize a sentence pattern that is clearly exemplified.
-- No links; no extra commentary outside the JSON.
-
-Example response:
+**Contoh Respon:**
 {
   "vocabulary": [
     {
@@ -92,7 +82,8 @@ Example response:
   ]
 }
 
-Extract vocabulary from the following text:`
+**Teks untuk Dianalisis:**
+`
 
 export async function POST(request: NextRequest) {
   try {
@@ -105,11 +96,11 @@ export async function POST(request: NextRequest) {
 
     // Generate vocabulary extraction using AI
     const result = await generateObject({
-      model: mistral('mistral-large-latest'),
+      model: mistral('mistral-medium-latest'),
       schema: vocabularyExtractionResponseSchema,
       system: VOCABULARY_EXTRACTION_PROMPT,
       prompt: validatedData.text,
-      temperature: 0.3, // Lower temperature for more consistent results
+      temperature: 0.5, // Lower temperature for more consistent results
     })
 
     // Validate the AI response
