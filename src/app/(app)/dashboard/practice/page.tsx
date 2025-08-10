@@ -1,10 +1,7 @@
+'use client'
+
 import React from 'react'
 import { PracticeCenter } from '@/components/practice/PracticeCenter'
-
-export const metadata = {
-  title: 'Practice | AskVerba',
-  description: 'Practice your language skills on AskVerba',
-}
 
 export default function PracticePage() {
   return (

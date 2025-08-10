@@ -1,11 +1,9 @@
+'use client'
+
+import React from 'react'
 import { RegisterForm } from '@/components/auth/RegisterForm'
 import Link from 'next/link'
 import { withGuestOnly } from '@/components/auth/withAuth'
-
-export const metadata = {
-  title: 'Register | AskVerba',
-  description: 'Create a new AskVerba account',
-}
 
 function RegisterPage() {
   return (

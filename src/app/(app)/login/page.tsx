@@ -1,12 +1,9 @@
+'use client'
+
 import React from 'react'
 import { LoginForm } from '@/components/auth/LoginForm'
 import Link from 'next/link'
 import { withGuestOnly } from '@/components/auth/withAuth'
-
-export const metadata = {
-  title: 'Login | AskVerba',
-  description: 'Login to your AskVerba account',
-}
 
 function LoginPage() {
   return (
