@@ -1,6 +1,3 @@
-'use client'
-
-import React from 'react'
 import { VocabularyHeader } from '@/components/dashboard/vocabulary/VocabularyHeader'
 import { VocabularyList } from '@/components/dashboard/vocabulary/VocabularyList'
 

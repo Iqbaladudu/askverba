@@ -3,11 +3,6 @@
 import React, { useState } from 'react'
 import { HistoryList } from '@/components/dashboard/history/HistoryList'
 
-export const metadata = {
-  title: 'Translation History | AskVerba',
-  description: 'View your translation history on AskVerba',
-}
-
 export default function HistoryPage() {
   const [searchTerm, setSearchTerm] = useState('')
 

@@ -1,6 +1,3 @@
-'use client'
-
-import React from 'react'
 import { TranslationInterface } from '@/components/dashboard/TranslationInterface'
 import { DashboardHistory } from '@/components/dashboard/DashboardHistory'
 

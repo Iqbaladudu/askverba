@@ -1,5 +1,3 @@
-'use client'
-
 import React from 'react'
 import { LoginForm } from '@/components/auth/LoginForm'
 import Link from 'next/link'
