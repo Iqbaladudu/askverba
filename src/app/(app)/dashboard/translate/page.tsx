@@ -4,6 +4,11 @@ import React from 'react'
 import { TranslationInterface } from '@/components/dashboard/TranslationInterface'
 import { DashboardHistory } from '@/components/dashboard/DashboardHistory'
 
+export const metadata = {
+  title: 'Translation | AskVerba',
+  description: 'Translate text with AskVerba',
+}
+
 export default function DashboardPage() {
   return (
     <div className="space-y-8">

@@ -5,6 +5,11 @@ import { LoginForm } from '@/components/auth/LoginForm'
 import Link from 'next/link'
 import { withGuestOnly } from '@/components/auth/withAuth'
 
+export const metadata = {
+  title: 'Login | AskVerba',
+  description: 'Login to your AskVerba account',
+}
+
 function LoginPage() {
   return (
     <main className="min-h-screen flex flex-col justify-center bg-gray-50 dark:bg-gray-950">

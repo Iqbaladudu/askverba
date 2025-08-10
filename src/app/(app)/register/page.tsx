@@ -5,6 +5,11 @@ import { RegisterForm } from '@/components/auth/RegisterForm'
 import Link from 'next/link'
 import { withGuestOnly } from '@/components/auth/withAuth'
 
+export const metadata = {
+  title: 'Register | AskVerba',
+  description: 'Create a new AskVerba account',
+}
+
 function RegisterPage() {
   return (
     <main className="min-h-screen flex flex-col justify-center bg-gray-50 dark:bg-gray-950">
