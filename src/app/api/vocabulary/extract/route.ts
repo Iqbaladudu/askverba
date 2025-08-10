@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { generateObject } from 'ai'
 import { xai } from '@ai-sdk/xai'
 import { validateRequest } from '@/utils/api/error-handler'
+import { mistral } from '@/utils'
 
 // Schema for vocabulary extraction request
 const VocabularyExtractionSchema = z.object({
@@ -25,49 +26,68 @@ const vocabularyExtractionResponseSchema = z.object({
 })
 
 // System prompt for vocabulary extraction
-const VOCABULARY_EXTRACTION_PROMPT = `You are an expert English vocabulary analyzer. Your task is to extract the most important and useful vocabulary words from the given text for Indonesian learners of English.
+const VOCABULARY_EXTRACTION_PROMPT = `You are an expert English vocabulary analyzer for Indonesian learners. Extract the most important and useful vocabulary items from the given English text, with contextual and neutral explanations.
 
-EXTRACTION CRITERIA:
-1. Focus on words that are:
-   - Commonly used in everyday English
-   - Useful for Indonesian learners
-   - Not too basic (avoid words like "the", "and", "is")
-   - Not too advanced unless they're essential to the text meaning
+GOALS
+- Provide clear, context-driven explanations for Indonesian learners.
+- Keep definitions neutral (avoid culture-specific assumptions unless necessary).
+- Prioritize usefulness and frequency in everyday English.
 
-2. Include different word types:
-   - Nouns (concrete and abstract)
-   - Verbs (action and state)
-   - Adjectives (descriptive)
-   - Phrases (common expressions)
-   - Idioms (if present)
-   - Adverbs (important ones)
-   - Prepositions (in phrases)
+EXTRACTION SCOPE
+Extract a mix of:
+- Words: nouns, verbs, adjectives, adverbs, prepositions (not articles like "the", "a").
+- Phrases: common multi-word expressions and collocations.
+- Idioms: any idiomatic expressions present.
+- Sentence patterns: commonly used and reusable patterns (e.g., "It is + adj + to + verb", "be supposed to", "used to + verb").
 
-3. Difficulty levels:
-   - easy: Basic words that beginners should know
-   - medium: Intermediate words for developing learners
-   - hard: Advanced words or specialized terms
+SELECTION CRITERIA
+1) Include items that are:
+   - Common or highly useful in everyday communication
+   - Helpful for Indonesian learners
+   - Not too basic (avoid very elementary function words)
+   - Not too advanced unless essential to the text
+2) Balance parts of speech.
+3) Avoid duplicates or near-duplicates unless usage differs meaningfully.
 
-4. For each word provide:
-   - Accurate Indonesian translation
-   - Clear context explaining usage
-   - Appropriate word type classification
-   - Realistic difficulty assessment
+DIFFICULTY LEVELS
+- easy: high-frequency, beginner-friendly
+- medium: intermediate, broadly useful
+- hard: advanced or specialized, or nuanced usage
 
-5. Extract 5-15 words maximum, prioritizing quality over quantity.
+FOR EACH ITEM PROVIDE
+- word: the word/phrase/idiom/pattern exactly as it appears (for patterns, use a clear template)
+- translation: accurate Indonesian gloss or closest natural equivalent
+- type: one of ["noun","verb","adjective","adverb","preposition","phrase","idiom","sentence_pattern"]
+- difficulty: "easy" | "medium" | "hard"
+- context: concise, neutral explanation of meaning and typical usage in context, including:
+  - what it means in the given text
+  - how it's commonly used (register, typical collocations)
+  - notes on grammar/structure if relevant (e.g., "followed by -ing", "takes object", "fixed phrase")
 
-RESPONSE FORMAT:
-Return a JSON object with a "vocabulary" array containing the extracted words.
+OUTPUT REQUIREMENTS
+- Return JSON with a single key "vocabulary" mapping to an array of 5–15 items (prioritize quality).
+- Each array element must include all fields: word, translation, type, difficulty, context.
+- If the text contains idioms or sentence patterns, include them.
+- Keep explanations concise but specific; avoid overly technical linguistics jargon.
+- Do not include items that do not appear in the text, except to generalize a sentence pattern that is clearly exemplified.
+- No links; no extra commentary outside the JSON.
 
 Example response:
 {
   "vocabulary": [
     {
       "word": "accomplish",
-      "translation": "mencapai, menyelesaikan",
+      "translation": "mencapai; menyelesaikan",
       "type": "verb",
       "difficulty": "medium",
-      "context": "To successfully complete or achieve something, often requiring effort or skill"
+      "context": "To successfully complete something after effort; often used with goals/tasks (e.g., accomplish a goal)."
+    },
+    {
+      "word": "be supposed to",
+      "translation": "seharusnya; diharapkan untuk",
+      "type": "sentence_pattern",
+      "difficulty": "medium",
+      "context": "Pattern indicating expectation/obligation (subject + be supposed to + verb). Neutral register; common in spoken English."
     }
   ]
 }
@@ -79,11 +99,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate request
-    const validatedData = validateRequest(VocabularyExtractionSchema, body)
+    const validatedData = validateRequest(VocabularyExtractionSchema, body) as z.infer<
+      typeof VocabularyExtractionSchema
+    >
 
     // Generate vocabulary extraction using AI
     const result = await generateObject({
-      model: xai('grok-3-mini-fast-latest'),
+      model: mistral('mistral-large-latest'),
       schema: vocabularyExtractionResponseSchema,
       system: VOCABULARY_EXTRACTION_PROMPT,
       prompt: validatedData.text,
