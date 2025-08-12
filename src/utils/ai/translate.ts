@@ -32,6 +32,7 @@ export async function translateSimple(text: string): Promise<SimpleTranslationRe
       system: SIMPLE_TRANSLATE_SYSTEM_PROMPT,
       prompt: text,
       temperature: 0.5, // Lower temperature for more consistent results
+      experimental_telemetry: { isEnabled: true },
     })
 
     return result.object
@@ -50,6 +51,7 @@ export async function translateDetailed(text: string): Promise<TranslationResult
       system: EN_ID_DETAILED_TRANSLATOR_PROMPT,
       prompt: text,
       temperature: 0.5, // Lower temperature for more consistent results
+      experimental_telemetry: { isEnabled: true },
     })
 
     return result.object
