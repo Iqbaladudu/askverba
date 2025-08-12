@@ -169,48 +169,6 @@ export const HeroSection: React.FC = () => {
           </motion.div>
 
           {/* Enhanced Stats Section */}
-          <motion.div
-            variants={itemVariants}
-            className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto"
-          >
-            {heroStats.map((stat, idx) => (
-              <motion.div
-                key={idx}
-                className="group relative"
-                whileHover={{ scale: 1.05 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + idx * 0.1 }}
-              >
-                <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-2xl hover:border-[#FF5B9E]/30 transition-all duration-500">
-                  {/* Gradient background on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#FF5B9E]/5 to-blue-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                  <div className="relative z-10 flex flex-col items-center text-center">
-                    <motion.div
-                      className="mb-4 p-4 rounded-2xl bg-gradient-to-br from-[#FF5B9E]/10 to-blue-500/10 group-hover:from-[#FF5B9E]/20 group-hover:to-blue-500/20 transition-all duration-500"
-                      whileHover={{ rotate: 5 }}
-                    >
-                      <stat.icon className="w-8 h-8 text-[#FF5B9E] group-hover:scale-110 transition-transform duration-300" />
-                    </motion.div>
-
-                    <motion.span
-                      className="text-4xl font-black bg-gradient-to-r from-[#FF5B9E] to-blue-600 bg-clip-text text-transparent mb-2"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.4 + idx * 0.1, type: 'spring', stiffness: 200 }}
-                    >
-                      {stat.number}
-                    </motion.span>
-
-                    <span className="text-lg font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300">
-                      {stat.text}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
 
           {/* Enhanced Trust Indicator */}
           <motion.div variants={itemVariants} className="mt-20">
